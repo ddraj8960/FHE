@@ -1,0 +1,5 @@
+concrete-ml==1.5.0
+fastapi
+uvicorn
+pydantic
+requests

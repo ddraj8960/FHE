@@ -1,0 +1,120 @@
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --color-background: #0A0F0D;
+  --color-surface: #0F1A16;
+  --color-elevated: #152219;
+  
+  --color-primary-default: #00D4AA;
+  --color-primary-light: #33E0BB;
+  --color-primary-dark: #00A180;
+  
+  --color-risk-low: #00D4AA;
+  --color-risk-medium: #FFA502;
+  --color-risk-high: #FF4757;
+  
+  --color-text-primary: #E8F5F0;
+  --color-text-secondary: #7FB89A;
+  
+  --font-mono: "IBM Plex Mono", monospace;
+  --font-sans: "IBM Plex Sans", sans-serif;
+  
+  --border-radius-default: 4px;
+}
+
+
+@layer base {
+  body {
+    background-color: #0A0F0D;
+    color: #E8F5F0;
+    font-family: 'IBM Plex Sans', sans-serif;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+  }
+
+  h1, h2, h3, h4, h5, h6, .font-mono-tech {
+    font-family: 'IBM Plex Mono', monospace;
+  }
+}
+
+/* Custom Knox Terminal Styling */
+.terminal-border {
+  border: 1px solid #152219;
+}
+
+.terminal-border-teal {
+  border: 1px solid #00D4AA;
+}
+
+.glow-teal {
+  box-shadow: 0 0 10px rgba(0, 212, 170, 0.15);
+}
+
+.glow-teal-strong {
+  box-shadow: 0 0 20px rgba(0, 212, 170, 0.35);
+}
+
+/* Monospace Scanline Overlay Pattern */
+.scanlines {
+  position: relative;
+  overflow: hidden;
+}
+
+.scanlines::before {
+  content: " ";
+  display: block;
+  position: absolute;
+  top: 0; left: 0; bottom: 0; right: 0;
+  background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 255, 0, 0.06));
+  z-index: 2;
+  background-size: 100% 2px, 3px 100%;
+  pointer-events: none;
+}
+
+/* Animated encryption spinner */
+@keyframes spin-slow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes pulse-soft {
+  0%, 100% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+.animate-spin-slow {
+  animation: spin-slow 8s linear infinite;
+}
+
+.animate-pulse-soft {
+  animation: pulse-soft 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Knox Custom Terminal Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0A0F0D;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #152219;
+  border-radius: 2px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #00D4AA;
+}
