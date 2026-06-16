@@ -4,15 +4,17 @@ import hashlib
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
-from typing import List
+from typing import List, Dict, Any
+from pydantic import BaseModel
 
 from . import models, schemas, database
+from .analyzer import analyze_contract_address
 from concrete.ml.deployment import FHEModelServer
 
 # Initialize DB tables
 models.Base.metadata.create_all(bind=database.engine)
 
-app = FastAPI(title="WalletShield Backend", version="1.0.0")
+app = FastAPI(title="WalletShield DeFi Risk Oracle Backend", version="2.0.0")
 
 # Setup CORS so the React frontend can communicate with the server
 app.add_middleware(
@@ -23,8 +25,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Load Concrete ML FHE Model Server
-MODEL_DIR = "/mnt/c/Users/utkar/Desktop/Projects/College/prism-v2/fhe/compiled_model"
+# Load Concrete ML FHE Model Server (configured for 6-feature DeFi model)
+MODEL_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "fhe", "compiled_model")
 if not os.path.exists(MODEL_DIR):
     raise RuntimeError(f"FHE model directory not found at {MODEL_DIR}. Train the model first.")
 
@@ -33,12 +35,32 @@ fhe_server = FHEModelServer(path_dir=MODEL_DIR)
 fhe_server.load()
 print("FHE model server loaded successfully.")
 
+class AnalyzeRequest(BaseModel):
+    address: str
+
 @app.get("/api/health")
 def health_check():
     return {"status": "ok"}
 
+@app.post("/api/analyze-contract")
+def analyze_contract(req: AnalyzeRequest):
+    """
+    Endpoint to dynamically analyze an arbitrary smart contract.
+    Queries Etherscan and audits the code via LLM.
+    """
+    try:
+        report = analyze_contract_address(req.address)
+        return report
+    except Exception as e:
+        print(f"Contract analysis failed: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to analyze contract: {str(e)}")
+
 @app.post("/api/verify", response_model=schemas.VerifyResponse)
 def verify_transaction(req: schemas.VerifyRequest, db: Session = Depends(database.get_db)):
+    """
+    Submit FHE ciphertext (comprising encrypted private features) for server blind inference.
+    Combine with public features server-side if needed (the client compiles the full 6-feature vector).
+    """
     try:
         # Convert hex inputs to bytes
         ciphertext_bytes = bytes.fromhex(req.ciphertext)
@@ -57,8 +79,8 @@ def verify_transaction(req: schemas.VerifyRequest, db: Session = Depends(databas
             id=verification_id,
             wallet_address=req.wallet_address.lower(),
             encrypted_payload_hash=ciphertext_hash,
-            amount_range=req.amount_range,
-            merchant_category=req.merchant_category,
+            investment_range=req.investment_range,
+            protocol_name=req.protocol_name,
             blockchain_confirmed=False
         )
         db.add(db_verification)
@@ -99,15 +121,15 @@ def get_audit_record(id: str, db: Session = Depends(database.get_db)):
     if not record:
         raise HTTPException(status_code=404, detail="Audit verification record not found.")
     
-    # Return the record. Note that exact amount, FHE keys, location risks, etc., are never stored server-side.
+    # Return the record. Note that exact investment amount, FHE keys, location risks, etc., are never stored server-side.
     return {
         "id": record.id,
         "created_at": record.created_at,
         "wallet_address": record.wallet_address,
         "encrypted_payload_hash": record.encrypted_payload_hash,
         "risk_result": record.risk_result,
-        "amount_range": record.amount_range,
-        "merchant_category": record.merchant_category,
+        "investment_range": record.investment_range,
+        "protocol_name": record.protocol_name,
         "blockchain_tx_hash": record.blockchain_tx_hash,
         "blockchain_confirmed": record.blockchain_confirmed
     }

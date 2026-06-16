@@ -19,11 +19,11 @@ export default function Landing({ walletAddress, connectWallet }) {
         </pre>
         
         <h1 className="text-xl sm:text-2xl font-bold font-mono text-[#E8F5F0] mb-3 uppercase tracking-wider">
-          Privacy-Preserving Transaction Risk Scoring
+          Privacy-Preserving DeFi Pre-Staking Risk Assessment
         </h1>
         <p className="text-[#7FB89A] text-sm sm:text-base leading-relaxed mb-6">
-          Traditional digital wallets expose plaintext transaction metadata (amounts, merchant categories, locations) to fraud-detection servers. 
-          WalletShield secures your wallet by performing homomorphic machine learning inference on client-encrypted inputs. The server scores transaction risk without ever decrypting or seeing your raw data.
+          Traditional DeFi analytics expose plaintext staking intent (investment amounts, target protocols, portfolio concentrations) to risk-scoring servers. 
+          WalletShield secures your private strategy by performing homomorphic machine learning inference on client-encrypted inputs. The server scores protocol risk without ever decrypting or seeing your raw parameters.
         </p>
 
         <div className="flex flex-col sm:flex-row gap-4 border-t border-[#152219]/60 pt-6">
@@ -57,21 +57,21 @@ export default function Landing({ walletAddress, connectWallet }) {
         <div className="border border-[#152219] bg-[#0F1A16]/50 p-5 rounded-sm">
           <div className="font-mono text-[#00D4AA] text-xs font-bold mb-2 uppercase tracking-wider">01 // Client Encrypt</div>
           <p className="text-xs text-[#7FB89A] leading-relaxed">
-            Concrete ML parameters and cryptographic keys are loaded locally. Secret keys never leave your secure wallet interface. Inputs are encrypted client-side.
+            Concrete ML model client parameters are loaded locally. Secret keys never leave your browser context. Staking parameters are encrypted client-side.
           </p>
         </div>
         {/* Step 2 */}
         <div className="border border-[#152219] bg-[#0F1A16]/50 p-5 rounded-sm">
           <div className="font-mono text-[#00D4AA] text-xs font-bold mb-2 uppercase tracking-wider">02 // Homomorphic Inference</div>
           <p className="text-xs text-[#7FB89A] leading-relaxed">
-            The server evaluates a quantized logistic regression model directly on the ciphertext. Plaintext amount, merchant category, and scores are never revealed.
+            The server evaluates a quantized logistic regression model directly on the ciphertext. Plaintext investment amounts, portfolio concentration, and scores are never revealed.
           </p>
         </div>
         {/* Step 3 */}
         <div className="border border-[#152219] bg-[#0F1A16]/50 p-5 rounded-sm">
           <div className="font-mono text-[#00D4AA] text-xs font-bold mb-2 uppercase tracking-wider">03 // On-Chain Verification</div>
           <p className="text-xs text-[#7FB89A] leading-relaxed">
-            Upon local decryption and verification, an immutable, hashed audit log is written to the Polygon Amoy blockchain to record validation status.
+            Upon local decryption, the user acknowledges the risk tier through an on-chain gate. An immutable, hashed audit log is written to the blockchain.
           </p>
         </div>
       </div>
@@ -86,7 +86,7 @@ export default function Landing({ walletAddress, connectWallet }) {
           <tbody>
             <tr>
               <td className="py-1 text-[#E8F5F0]">Compiler</td>
-              <td className="py-1 text-right">Zama Concrete Compiler v2.6</td>
+              <td className="py-1 text-right">Zama Concrete Compiler (via concrete-ml v1.9.0)</td>
             </tr>
             <tr>
               <td className="py-1 text-[#E8F5F0]">Model Architecture</td>
@@ -94,7 +94,7 @@ export default function Landing({ walletAddress, connectWallet }) {
             </tr>
             <tr>
               <td className="py-1 text-[#E8F5F0]">On-chain Log Registry</td>
-              <td className="py-1 text-right">Polygon Amoy Testnet (Solidity 0.8.24)</td>
+              <td className="py-1 text-right">On-Chain Pre-Tx Gates (Local Hardhat Node)</td>
             </tr>
             <tr>
               <td className="py-1 text-[#E8F5F0]">Client Encryption Daemon</td>

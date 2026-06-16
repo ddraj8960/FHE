@@ -7,30 +7,33 @@ import os
 import shutil
 
 def main():
-    print("--- Phase 2: Generating Synthetic Dataset ---")
+    print("--- Phase 2: Generating DeFi Synthetic Dataset ---")
     n_samples = 10000
     np.random.seed(42)
 
     # Features:
-    # 1. amount_normalized (0.0 to 1.0)
-    # 2. merchant_risk (0.0 to 1.0)
-    # 3. device_trust_risk (0.0 to 1.0, where 0.0 is trusted, 1.0 is untrusted)
-    # 4. tx_frequency_normalized (0.0 to 1.0)
-    # 5. location_risk (0.0 to 1.0)
-    amount = np.random.uniform(0.0, 1.0, n_samples)
-    merchant = np.random.uniform(0.0, 1.0, n_samples)
-    device = np.random.uniform(0.0, 1.0, n_samples)
-    freq = np.random.uniform(0.0, 1.0, n_samples)
-    location = np.random.uniform(0.0, 1.0, n_samples)
+    # 1. investment_amount (0.0 to 1.0, private FHE) - User staking amount normalized against $100K
+    # 2. protocol_risk_score (0.0 to 1.0, public) - General risk score (TVL, market cap, audits)
+    # 3. contract_verification (0.0 to 1.0, public) - Source verification & proxy status
+    # 4. portfolio_concentration (0.0 to 1.0, private FHE) - % of user portfolio in this staking pool
+    # 5. protocol_maturity (0.0 to 1.0, public) - Inverse of contract age (newer = higher risk)
+    # 6. contract_code_risk (0.0 to 1.0, public) - Dynamic AI audit vulnerability score
+
+    investment_amount = np.random.uniform(0.0, 1.0, n_samples)
+    protocol_risk = np.random.uniform(0.0, 1.0, n_samples)
+    contract_verification = np.random.uniform(0.0, 1.0, n_samples)
+    portfolio_conc = np.random.uniform(0.0, 1.0, n_samples)
+    protocol_maturity = np.random.uniform(0.0, 1.0, n_samples)
+    contract_code_risk = np.random.uniform(0.0, 1.0, n_samples)
 
     # Heuristic formula for risk score (0.0 to 1.0)
-    # Give higher weights to high transaction amounts and untrusted devices
     raw_risk = (
-        0.30 * amount +
-        0.25 * merchant +
-        0.20 * device +
-        0.15 * freq +
-        0.10 * location
+        0.25 * investment_amount +
+        0.20 * protocol_risk +
+        0.15 * contract_verification +
+        0.15 * portfolio_conc +
+        0.10 * protocol_maturity +
+        0.15 * contract_code_risk
     )
 
     # Label classification:
@@ -45,13 +48,20 @@ def main():
     unique, counts = np.unique(labels, return_counts=True)
     print(f"Class distribution: {dict(zip(unique, counts))}")
 
-    X = np.stack([amount, merchant, device, freq, location], axis=1)
+    X = np.stack([
+        investment_amount, 
+        protocol_risk, 
+        contract_verification, 
+        portfolio_conc, 
+        protocol_maturity, 
+        contract_code_risk
+    ], axis=1)
     y = labels
 
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-    print("\n--- Training Quantized Logistic Regression Model ---")
-    # Using 6-bit quantization as per TRD constraints
+    print("\n--- Training Quantized 6-Feature Logistic Regression Model ---")
+    # Using 6-bit quantization as per FHE constraints
     model = LogisticRegression(n_bits=6)
     model.fit(X_train, y_train)
 
@@ -65,7 +75,7 @@ def main():
     print(f"Plaintext prediction accuracy on test set: {accuracy * 100:.2f}%")
 
     # Save compiled model artifacts
-    export_dir = "/mnt/c/Users/utkar/Desktop/Projects/College/prism-v2/fhe/compiled_model"
+    export_dir = os.path.join(os.path.dirname(__file__), "compiled_model")
     if os.path.exists(export_dir):
         shutil.rmtree(export_dir)
     os.makedirs(export_dir, exist_ok=True)

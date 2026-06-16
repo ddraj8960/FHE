@@ -69,8 +69,8 @@ export default function History({ walletAddress }) {
                 <tr className="border-b border-[#152219] text-[#E8F5F0]">
                   <th className="py-3 px-2 uppercase font-semibold">Verification ID</th>
                   <th className="py-3 px-2 uppercase font-semibold">Timestamp</th>
-                  <th className="py-3 px-2 uppercase font-semibold">Category</th>
-                  <th className="py-3 px-2 uppercase font-semibold">Amount Range</th>
+                  <th className="py-3 px-2 uppercase font-semibold">Protocol</th>
+                  <th className="py-3 px-2 uppercase font-semibold">Investment Range</th>
                   <th className="py-3 px-2 uppercase font-semibold">Risk Rating</th>
                   <th className="py-3 px-2 uppercase font-semibold text-center">Status</th>
                   <th className="py-3 px-2 uppercase font-semibold text-right">Actions</th>
@@ -85,8 +85,8 @@ export default function History({ walletAddress }) {
                     <td className="py-3 px-2 text-[11px]">
                       {new Date(tx.created_at).toLocaleString()}
                     </td>
-                    <td className="py-3 px-2">{tx.merchant_category}</td>
-                    <td className="py-3 px-2">{tx.amount_range}</td>
+                    <td className="py-3 px-2">{tx.protocol_name}</td>
+                    <td className="py-3 px-2">{tx.investment_range}</td>
                     <td className="py-3 px-2">
                       <span
                         className={`px-1.5 py-0.5 border text-[10px] font-bold ${
@@ -121,7 +121,7 @@ export default function History({ walletAddress }) {
                         </Link>
                         {tx.blockchain_tx_hash && (
                           <a
-                            href={`https://amoy.polygonscan.com/tx/${tx.blockchain_tx_hash}`}
+                            href={`https://etherscan.io/tx/${tx.blockchain_tx_hash}`}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="hover:text-[#00D4AA] hover:underline uppercase text-[10px]"

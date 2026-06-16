@@ -94,12 +94,12 @@ export default function Audit() {
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div className="border border-[#152219] bg-[#0A0F0D]/60 p-3">
-                  <span className="text-[10px] text-[#7FB89A] block uppercase">Merchant Category</span>
-                  <span className="text-xs text-[#E8F5F0]">{record.merchant_category}</span>
+                  <span className="text-[10px] text-[#7FB89A] block uppercase">Protocol</span>
+                  <span className="text-xs text-[#E8F5F0]">{record.protocol_name}</span>
                 </div>
                 <div className="border border-[#152219] bg-[#0A0F0D]/60 p-3">
-                  <span className="text-[10px] text-[#7FB89A] block uppercase">Amount Range</span>
-                  <span className="text-xs text-[#E8F5F0]">{record.amount_range}</span>
+                  <span className="text-[10px] text-[#7FB89A] block uppercase">Investment Range</span>
+                  <span className="text-xs text-[#E8F5F0]">{record.investment_range}</span>
                 </div>
                 <div className="border border-[#152219] bg-[#0A0F0D]/60 p-3">
                   <span className="text-[10px] text-[#7FB89A] block uppercase">Risk Result</span>
@@ -147,7 +147,7 @@ export default function Audit() {
                   <div className="border-t border-[#152219] pt-3">
                     <span className="text-[10px] text-[#7FB89A] block uppercase">Transaction Hash</span>
                     <a
-                      href={`https://amoy.polygonscan.com/tx/${record.blockchain_tx_hash}`}
+                      href={`https://etherscan.io/tx/${record.blockchain_tx_hash}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-xs text-[#00D4AA] hover:underline break-all"

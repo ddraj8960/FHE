@@ -14,8 +14,8 @@ class Verification(Base):
     risk_score_raw = Column(Float, nullable=True)
     blockchain_tx_hash = Column(String, nullable=True)
     blockchain_confirmed = Column(Boolean, default=False)
-    amount_range = Column(String, nullable=False)  # Bucketed amount, e.g. "100-500"
-    merchant_category = Column(String, nullable=False)
+    investment_range = Column(String, nullable=False)  # Bucketed staking amount, e.g. "Under 10K", "10K-50K"
+    protocol_name = Column(String, nullable=False)
 
 class FHESession(Base):
     __tablename__ = "fhe_sessions"

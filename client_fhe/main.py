@@ -18,7 +18,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-MODEL_DIR = "/mnt/c/Users/utkar/Desktop/Projects/College/prism-v2/fhe/compiled_model"
+MODEL_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "fhe", "compiled_model")
 if not os.path.exists(MODEL_DIR):
     raise RuntimeError(f"Compiled client FHE artifacts not found at {MODEL_DIR}. Please compile the FHE model first.")
 
