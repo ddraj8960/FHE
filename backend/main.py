@@ -7,6 +7,22 @@ from sqlalchemy.orm import Session
 from typing import List, Dict, Any
 from pydantic import BaseModel
 
+# Custom lightweight .env loader to support local API key setups
+def load_dotenv():
+    for env_dir in [os.path.dirname(os.path.abspath(__file__)), os.path.dirname(os.path.dirname(os.path.abspath(__file__)))]:
+        env_path = os.path.join(env_dir, ".env")
+        if os.path.exists(env_path):
+            print(f"Loading environment variables from: {env_path}")
+            with open(env_path, "r") as f:
+                for line in f:
+                    line = line.strip()
+                    if line and not line.startswith("#") and "=" in line:
+                        key, val = line.split("=", 1)
+                        os.environ[key.strip()] = val.strip().strip('"').strip("'")
+            break
+
+load_dotenv()
+
 from . import models, schemas, database
 from .analyzer import analyze_contract_address
 from concrete.ml.deployment import FHEModelServer

@@ -1,23 +1,25 @@
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500;600;700&display=swap');
 @import "tailwindcss";
 
 @theme {
-  --color-background: #040807;
-  --color-surface: rgba(15, 26, 22, 0.45);
-  --color-elevated: rgba(21, 34, 25, 0.7);
+  --color-background: #050505;
+  --color-surface: rgba(18, 18, 18, 0.9);
+  --color-elevated: #161616;
   
-  --color-primary-default: #00FFC4;
-  --color-primary-light: #66FFD9;
-  --color-primary-dark: #00B38A;
+  --color-primary-default: #C0FF00; /* Volt Green */
+  --color-primary-light: #D4FF4D;
+  --color-primary-dark: #92C200;
   
-  --color-risk-low: #00FFC4;
-  --color-risk-medium: #FFAD00;
+  --color-accent-orange: #FF5A00; /* Volt Orange */
+  
+  --color-risk-low: #C0FF00;
+  --color-risk-medium: #FFB300;
   --color-risk-high: #FF2A5F;
   
-  --color-text-primary: #EBF7F2;
-  --color-text-secondary: #8EBF9F;
+  --color-text-primary: #F5F5F5;
+  --color-text-secondary: #909090;
   
-  --font-mono: "IBM Plex Mono", monospace;
+  --font-mono: "JetBrains Mono", monospace;
   --font-sans: "Space Grotesk", sans-serif;
   
   --border-radius-default: 8px;
@@ -25,8 +27,8 @@
 
 @layer base {
   body {
-    background-color: #040807;
-    color: #EBF7F2;
+    background-color: #050505;
+    color: #F5F5F5;
     font-family: 'Space Grotesk', sans-serif;
     margin: 0;
     padding: 0;
@@ -34,11 +36,11 @@
   }
 
   h1, h2, h3, h4, h5, h6, .font-mono-tech {
-    font-family: 'IBM Plex Mono', monospace;
+    font-family: 'JetBrains Mono', monospace;
   }
 }
 
-/* Cyber Grid Overlay background */
+/* Subtle, clean grid overlay for context */
 .cyber-grid {
   position: relative;
 }
@@ -48,115 +50,105 @@
   position: absolute;
   inset: 0;
   background-image: 
-    linear-gradient(rgba(0, 255, 196, 0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0, 255, 196, 0.03) 1px, transparent 1px);
-  background-size: 24px 24px;
+    linear-gradient(rgba(192, 255, 0, 0.01) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(192, 255, 0, 0.01) 1px, transparent 1px);
+  background-size: 40px 40px;
   background-position: center;
   pointer-events: none;
   z-index: 0;
 }
 
-.cyber-radial {
-  position: absolute;
-  top: 10%;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 600px;
-  height: 600px;
-  background: radial-gradient(circle, rgba(0, 255, 196, 0.08) 0%, transparent 70%);
-  pointer-events: none;
-  z-index: 0;
-}
-
-/* Glassmorphism Card Style */
-.glass-panel {
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  background: rgba(10, 18, 15, 0.65);
-  border: 1px solid rgba(0, 255, 196, 0.12);
+/* Clean, modern dashboard containers (Stripe/Vercel style) */
+.dashboard-card {
+  background: #111111;
+  border: 1px solid #222222;
   border-radius: 8px;
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.glass-panel-hover {
-  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+.dashboard-card-hover:hover {
+  border-color: rgba(192, 255, 0, 0.25);
+  box-shadow: 0 8px 32px rgba(192, 255, 0, 0.04);
 }
 
-.glass-panel-hover:hover {
-  border-color: rgba(0, 255, 196, 0.35);
-  box-shadow: 0 12px 40px 0 rgba(0, 255, 196, 0.1);
-  transform: translateY(-2px);
+/* Glowing text elements */
+.volt-glow-text {
+  text-shadow: 0 0 10px rgba(192, 255, 0, 0.15);
 }
 
-.glow-teal {
-  box-shadow: 0 0 15px rgba(0, 255, 196, 0.1);
+/* Minimalist tech-style form controls */
+.tech-input {
+  background: #090909;
+  border: 1px solid #222222;
+  border-radius: 6px;
+  color: #F5F5F5;
+  font-family: 'JetBrains Mono', monospace;
+  padding: 12px;
+  transition: all 0.2s ease-in-out;
 }
 
-.glow-teal-strong {
-  box-shadow: 0 0 25px rgba(0, 255, 196, 0.25);
+.tech-input:focus {
+  border-color: #C0FF00;
+  outline: none;
 }
 
-/* Monospace Scanline Overlay Pattern */
-.scanlines {
-  position: relative;
-  overflow: hidden;
+.tech-btn-primary {
+  background: #C0FF00;
+  color: #050505;
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  padding: 14px 24px;
+  border-radius: 6px;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 2px 10px rgba(192, 255, 0, 0.1);
 }
 
-.scanlines::after {
-  content: " ";
-  display: block;
-  position: absolute;
-  top: 0; left: 0; bottom: 0; right: 0;
-  background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.15) 50%);
-  z-index: 2;
-  background-size: 100% 4px;
-  pointer-events: none;
+.tech-btn-primary:hover:not(:disabled) {
+  background: #D4FF4D;
+  box-shadow: 0 4px 15px rgba(192, 255, 0, 0.25);
 }
 
-/* Animations */
-@keyframes spin-slow {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+.tech-btn-secondary {
+  background: transparent;
+  color: #F5F5F5;
+  border: 1px solid #222222;
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 500;
+  padding: 12px 24px;
+  border-radius: 6px;
+  transition: all 0.2s;
 }
 
-@keyframes pulse-soft {
-  0%, 100% { opacity: 0.4; }
-  50% { opacity: 0.95; }
+.tech-btn-secondary:hover {
+  border-color: #C0FF00;
+  color: #C0FF00;
 }
 
-@keyframes border-glow {
-  0%, 100% { border-color: rgba(0, 255, 196, 0.15); }
-  50% { border-color: rgba(0, 255, 196, 0.45); }
+/* Sleek code and log viewer */
+.terminal-viewer {
+  background: #080808;
+  border: 1px solid #1c1c1c;
+  border-radius: 6px;
+  font-family: 'JetBrains Mono', monospace;
 }
 
-.animate-spin-slow {
-  animation: spin-slow 12s linear infinite;
-}
-
-.animate-pulse-soft {
-  animation: pulse-soft 2.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
-
-.glow-border-pulse {
-  animation: border-glow 3s infinite;
-}
-
-/* Knox Custom Terminal Scrollbar */
+/* Custom scrollbars */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #040807;
+  background: #050505;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(0, 255, 196, 0.1);
-  border-radius: 4px;
-  border: 2px solid #040807;
+  background: #222222;
+  border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #00FFC4;
+  background: #C0FF00;
 }

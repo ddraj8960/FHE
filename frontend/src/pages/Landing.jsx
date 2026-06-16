@@ -3,117 +3,135 @@ import { Link } from 'react-router-dom';
 
 export default function Landing({ walletAddress, connectWallet }) {
   return (
-    <div className="relative min-h-[calc(100vh-4rem)] cyber-grid scanlines py-12 px-4">
-      <div className="cyber-radial"></div>
-      
-      <div className="relative z-10 max-w-4xl mx-auto">
-        {/* Knox Technical Header Panel */}
-        <div className="glass-panel p-6 sm:p-8 mb-8 relative glow-teal glow-border-pulse">
-          <div className="absolute top-0 right-6 transform -translate-y-1/2 bg-[#040807] border border-[#00FFC4]/30 px-3 py-0.5 font-mono text-[10px] text-[#00FFC4] uppercase tracking-widest rounded-sm">
-            SYSTEM STATUS: ACTIVE
+    <div className="relative min-h-[calc(100vh-4rem)] cyber-grid py-12 px-4">
+      <div className="relative max-w-5xl mx-auto space-y-8">
+        
+        {/* Main Dashboard Info Card */}
+        <div className="dashboard-card p-8 sm:p-10 relative">
+          <div className="absolute top-0 right-8 transform -translate-y-1/2 bg-[#050505] border border-[#C0FF00]/30 px-3 py-1 font-mono text-[9px] text-[#C0FF00] uppercase tracking-wider rounded font-bold">
+            AUDIT ENGINE ORACLE
           </div>
-          
-          {/* Terminal Text Banner */}
-          <pre className="font-mono text-[9px] sm:text-xs text-[#00FFC4] leading-none mb-8 overflow-x-auto select-none opacity-85">
-{` _  _  __   __   __   ____  ____  ____  _  _  __  ____  __   ____ 
-( \\/ )/ _\\ (  ) (  ) (  __)(_  _)/ ___)/ )( \\(  )(  __)(  ) (    \\
-/ \\/ \\/    \\/ (_// (_/\\)__)   )(  \\___ \\) __ ( )(  )__) / (_/\\) D (
-\\_)(_/\\_/\\_/\\____/\\____/(____) (__) (____/\\_)(_/(__)(____)\\____/(____/`}
-          </pre>
-          
-          <h1 className="text-2xl sm:text-3xl font-bold font-mono text-[#EBF7F2] mb-4 uppercase tracking-wider">
-            Privacy-Preserving DeFi Pre-Staking Risk Assessment
-          </h1>
-          <p className="text-[#8EBF9F] text-sm sm:text-base leading-relaxed mb-8 max-w-3xl">
-            Traditional DeFi analytics expose plaintext staking intent (investment amounts, target protocols, portfolio concentrations) to risk-scoring servers. 
-            WalletShield secures your private strategy by performing homomorphic machine learning inference on client-encrypted inputs. The server scores protocol risk without ever decrypting or seeing your raw parameters.
-          </p>
 
-          <div className="flex flex-col sm:flex-row gap-4 border-t border-white/5 pt-6">
-            {walletAddress ? (
+          <div className="space-y-6">
+            <div className="inline-flex items-center gap-2 bg-[#C0FF00]/5 border border-[#C0FF00]/10 px-3 py-1 rounded text-xs font-mono text-[#C0FF00]">
+              <span className="h-1.5 w-1.5 rounded-full bg-[#C0FF00]"></span>
+              ZAMA FHE COMPILER INTEGRATED
+            </div>
+
+            <h1 className="text-3xl sm:text-4xl font-extrabold font-mono text-[#F5F5F5] tracking-tight uppercase">
+              Privacy-Preserving DeFi Pre-Staking Risk Analysis
+            </h1>
+
+            <p className="text-[#909090] text-sm sm:text-base leading-relaxed max-w-3xl">
+              Traditional decentralized finance audit layers expose sensitive private intentions—such as asset staking amounts and personal asset weights—to risk scoring APIs. 
+              WalletShield enforces secure risk compliance without leaking private parameters. Using **Fully Homomorphic Encryption (FHE)**, our scoring models execute on-chain validation gates blindly on encrypted payloads.
+            </p>
+
+            <div className="flex flex-col sm:flex-row gap-4 pt-4">
+              {walletAddress ? (
+                <Link
+                  to="/verify"
+                  className="tech-btn-primary inline-block text-center text-xs"
+                >
+                  START SECURE SCAN &gt;
+                </Link>
+              ) : (
+                <button
+                  onClick={connectWallet}
+                  className="font-mono text-xs uppercase px-6 py-3.5 border border-[#C0FF00] text-[#C0FF00] hover:bg-[#C0FF00]/5 transition-all duration-200 font-bold tracking-widest rounded"
+                >
+                  Connect MetaMask
+                </button>
+              )}
               <Link
-                to="/verify"
-                className="inline-block text-center font-mono text-xs uppercase px-6 py-3 border.5 border-[#00FFC4] text-[#040807] bg-[#00FFC4] hover:bg-[#66FFD9] hover:border-[#66FFD9] transition-all duration-300 font-bold tracking-widest shadow-[0_0_15px_rgba(0,255,196,0.25)] hover:shadow-[0_0_25px_rgba(0,255,196,0.45)]"
+                to="/history"
+                className="tech-btn-secondary inline-block text-center text-xs"
               >
-                Initialize Verification Flow &gt;
+                Access Ledger Logs
               </Link>
-            ) : (
-              <button
-                onClick={connectWallet}
-                className="font-mono text-xs uppercase px-6 py-3 border border-[#00FFC4] text-[#00FFC4] hover:bg-[#00FFC4]/15 transition-all duration-300 font-bold tracking-widest shadow-[0_0_10px_rgba(0,255,196,0.1)]"
-              >
-                Connect MetaMask to Begin
-              </button>
-            )}
-            <Link
-              to="/history"
-              className="inline-block text-center font-mono text-xs uppercase px-6 py-3 border border-white/10 text-[#8EBF9F] bg-transparent hover:text-[#EBF7F2] hover:border-[#00FFC4]/30 transition-all duration-300 rounded-sm"
-            >
-              Access Audit Ledger
-            </Link>
+            </div>
           </div>
         </div>
 
-        {/* 3-Step Flow Diagram (Knox UI style) */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        {/* 3-Step Process Columns */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Step 1 */}
-          <div className="glass-panel glass-panel-hover p-6 rounded-sm">
-            <div className="font-mono text-[#00FFC4] text-xs font-bold mb-3 uppercase tracking-wider flex items-center gap-2">
-              <span className="h-2 w-2 rounded-full bg-[#00FFC4] animate-pulse-soft"></span>
-              <span>01 // Client Encrypt</span>
+          <div className="dashboard-card p-6 dashboard-card-hover space-y-4">
+            <div className="flex items-center justify-between border-b border-[#222222] pb-3">
+              <span className="font-mono text-xs text-[#C0FF00] font-bold tracking-wider uppercase">01 // Encryption</span>
+              <span className="text-[9px] font-mono text-[#909090] uppercase">Client Context</span>
             </div>
-            <p className="text-xs text-[#8EBF9F] leading-relaxed">
-              Concrete ML model client parameters are loaded locally. Secret keys never leave your browser context. Staking parameters are encrypted client-side.
+            <h3 className="font-mono text-sm font-bold text-[#F5F5F5] uppercase tracking-wide">Client Parameters</h3>
+            <p className="text-xs text-[#909090] leading-relaxed">
+              Your investment capital size and portfolio allocation weights are converted to integers and encrypted locally via Zama Concrete ML. Private keys never leave your local environment.
             </p>
           </div>
+
           {/* Step 2 */}
-          <div className="glass-panel glass-panel-hover p-6 rounded-sm">
-            <div className="font-mono text-[#00FFC4] text-xs font-bold mb-3 uppercase tracking-wider flex items-center gap-2">
-              <span className="h-2 w-2 rounded-full bg-[#00FFC4] animate-pulse-soft"></span>
-              <span>02 // Homomorphic Inference</span>
+          <div className="dashboard-card p-6 dashboard-card-hover space-y-4">
+            <div className="flex items-center justify-between border-b border-[#222222] pb-3">
+              <span className="font-mono text-xs text-[#C0FF00] font-bold tracking-wider uppercase">02 // Blind Scoring</span>
+              <span className="text-[9px] font-mono text-[#909090] uppercase">Server Context</span>
             </div>
-            <p className="text-xs text-[#8EBF9F] leading-relaxed">
-              The server evaluates a quantized logistic regression model directly on the ciphertext. Plaintext investment amounts, portfolio concentration, and scores are never revealed.
+            <h3 className="font-mono text-sm font-bold text-[#F5F5F5] uppercase tracking-wide">FHE Inference</h3>
+            <p className="text-xs text-[#909090] leading-relaxed">
+              The backend server executes homomorphic model inference on ciphertexts. Plaintext staking allocations, target addresses, and raw scores are never decrypted or exposed.
             </p>
           </div>
+
           {/* Step 3 */}
-          <div className="glass-panel glass-panel-hover p-6 rounded-sm">
-            <div className="font-mono text-[#00FFC4] text-xs font-bold mb-3 uppercase tracking-wider flex items-center gap-2">
-              <span className="h-2 w-2 rounded-full bg-[#00FFC4] animate-pulse-soft"></span>
-              <span>03 // On-Chain Verification</span>
+          <div className="dashboard-card p-6 dashboard-card-hover space-y-4">
+            <div className="flex items-center justify-between border-b border-[#222222] pb-3">
+              <span className="font-mono text-xs text-[#C0FF00] font-bold tracking-wider uppercase">03 // Verification</span>
+              <span className="text-[9px] font-mono text-[#909090] uppercase">On-Chain Gate</span>
             </div>
-            <p className="text-xs text-[#8EBF9F] leading-relaxed">
-              Upon local decryption, the user acknowledges the risk tier through an on-chain gate. An immutable, hashed audit log is written to the blockchain.
+            <h3 className="font-mono text-sm font-bold text-[#F5F5F5] uppercase tracking-wide">PreTx Gatekeepers</h3>
+            <p className="text-xs text-[#909090] leading-relaxed">
+              The decrypted risk tier is verified on-chain via the PreTxGate smart contract. A cryptographic hash of the FHE ciphertext is logged as an immutable audit trail to RiskLog.
             </p>
           </div>
         </div>
 
-        {/* Security Element Card */}
-        <div className="glass-panel p-6">
-          <h3 className="font-mono text-xs text-[#EBF7F2] uppercase tracking-widest mb-4 border-b border-white/5 pb-2 flex items-center justify-between">
-            <span>Cryptographic Specs</span>
-            <span className="text-[10px] text-[#8EBF9F]">FHE parameters</span>
-          </h3>
-          <table className="w-full text-xs font-mono text-[#8EBF9F] leading-relaxed">
-            <tbody>
-              <tr className="border-b border-white/5">
-                <td className="py-2 text-[#EBF7F2]">Compiler</td>
-                <td className="py-2 text-right">Zama Concrete Compiler (via concrete-ml v1.9.0)</td>
-              </tr>
-              <tr className="border-b border-white/5">
-                <td className="py-2 text-[#EBF7F2]">Model Architecture</td>
-                <td className="py-2 text-right">Quantized Logistic Regression (6-bit)</td>
-              </tr>
-              <tr className="border-b border-white/5">
-                <td className="py-2 text-[#EBF7F2]">On-chain Log Registry</td>
-                <td className="py-2 text-right">On-Chain Pre-Tx Gates (Local Hardhat Node)</td>
-              </tr>
-              <tr>
-                <td className="py-2 text-[#EBF7F2]">Client Encryption Daemon</td>
-                <td className="py-2 text-right">Local secure element representative (Python 3.10)</td>
-              </tr>
-            </tbody>
-          </table>
+        {/* Technical Specification Table */}
+        <div className="dashboard-card p-6 sm:p-8">
+          <div className="border-b border-[#222222] pb-3 mb-4 flex items-center justify-between">
+            <h3 className="font-mono text-xs font-bold text-[#F5F5F5] uppercase tracking-widest">
+              Cryptographic Telemetry Specs
+            </h3>
+            <span className="h-2 w-2 rounded bg-[#C0FF00]"></span>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs font-mono">
+            <div className="space-y-3">
+              <div className="flex justify-between border-b border-[#222222] pb-2">
+                <span className="text-[#909090] uppercase">FHE Compiler Framework</span>
+                <span className="text-[#F5F5F5] font-semibold">Zama Concrete Compiler v2.10</span>
+              </div>
+              <div className="flex justify-between border-b border-[#222222] pb-2">
+                <span className="text-[#909090] uppercase">Model Quantization</span>
+                <span className="text-[#F5F5F5] font-semibold">6-Bit quantized linear layers</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-[#909090] uppercase">Assessed ML Model</span>
+                <span className="text-[#F5F5F5] font-semibold">Logistic Regression (6 Features)</span>
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              <div className="flex justify-between border-b border-[#222222] pb-2">
+                <span className="text-[#909090] uppercase">On-Chain Enforcement Layer</span>
+                <span className="text-[#F5F5F5] font-semibold">PreTxGate.sol Smart Contract</span>
+              </div>
+              <div className="flex justify-between border-b border-[#222222] pb-2">
+                <span className="text-[#909090] uppercase">Ledger Proof Recording</span>
+                <span className="text-[#F5F5F5] font-semibold">RiskLog.sol (Solidity 0.8.24)</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-[#909090] uppercase">Audit Trail verification</span>
+                <span className="text-[#F5F5F5] font-semibold">Ciphertext SHA-256 Hashes</span>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>

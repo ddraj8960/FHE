@@ -28,4 +28,5 @@ class HistoryResponse(BaseModel):
     blockchain_confirmed: bool
 
     class Config:
-        from_attributes = True # updated for Pydantic V2 compatibility
+        orm_mode = True
+        from_attributes = True
