@@ -109,12 +109,6 @@ export default function Verify({ walletAddress, connectWallet }) {
       const portfolioConcNormalized = (parseFloat(formData.portfolioConcentration) || 0) / 100; // 0.0 - 1.0
 
       // Combined 6-feature vector
-      // 1. investment_amount (Private FHE)
-      // 2. protocol_risk_score (Public)
-      // 3. contract_verification (Public)
-      // 4. portfolio_concentration (Private FHE)
-      // 5. protocol_maturity (Public)
-      // 6. contract_code_risk (Public)
       const features = [
         amountNormalized,
         contractReport.protocol_risk_score,
@@ -223,275 +217,316 @@ export default function Verify({ walletAddress, connectWallet }) {
   };
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-8">
-      <div className="border border-[#152219] bg-[#0F1A16] p-6 glow-teal rounded-lg">
-        <h2 className="font-mono text-sm font-bold uppercase tracking-widest text-[#00D4AA] border-b border-[#152219] pb-3 mb-6 flex items-center justify-between">
-          <span>DeFi Pre-Staking Verification Console</span>
-          <span className="text-[10px] text-[#7FB89A]">Risk Gate ID: REG-8845</span>
-        </h2>
+    <div className="relative min-h-[calc(100vh-4rem)] cyber-grid scanlines py-12 px-4">
+      <div className="cyber-radial"></div>
 
-        {!walletAddress ? (
-          <div className="text-center py-8">
-            <p className="text-[#7FB89A] text-sm font-mono mb-4 uppercase">MetaMask Connection Required</p>
-            <button
-              onClick={connectWallet}
-              className="font-mono text-xs uppercase px-4 py-2 border border-[#00D4AA] text-[#00D4AA] hover:bg-[#00D4AA]/10 transition-colors duration-200"
-            >
-              Connect Wallet
-            </button>
-          </div>
-        ) : loading ? (
-          /* Processing Telemetry Step Indicators */
-          <div className="py-12 flex flex-col items-center">
-            <div className="relative w-16 h-16 mb-8 flex items-center justify-center">
-              <div className="absolute inset-0 border border-[#00D4AA] rounded-full animate-spin-slow border-t-transparent border-b-transparent"></div>
-              <span className="font-mono text-xs text-[#00D4AA] animate-pulse-soft">&lt;FHE&gt;</span>
-            </div>
+      <div className="relative z-10 max-w-3xl mx-auto">
+        <div className="glass-panel p-6 sm:p-8 glow-teal">
+          <h2 className="font-mono text-sm font-bold uppercase tracking-widest text-[#00FFC4] border-b border-white/5 pb-4 mb-6 flex items-center justify-between">
+            <span>DeFi Pre-Staking Verification Console</span>
+            <span className="text-[10px] text-[#8EBF9F] bg-white/5 px-2 py-0.5 rounded-sm">Risk Gate ID: REG-8845</span>
+          </h2>
 
-            <div className="w-full max-w-md space-y-4">
-              <div className="flex items-center justify-between text-[10px] font-mono">
-                <span className={loadingStep >= 1 ? "text-[#00D4AA]" : "text-[#152219]"}>1. ENCRYPTING</span>
-                <span className={loadingStep >= 2 ? "text-[#00D4AA]" : "text-[#152219]"}>2. INFERENCE</span>
-                <span className={loadingStep >= 3 ? "text-[#00D4AA]" : "text-[#152219]"}>3. PRE-TX GATE</span>
-                <span className={loadingStep >= 4 ? "text-[#00D4AA]" : "text-[#152219]"}>4. AUDIT LOG</span>
+          {!walletAddress ? (
+            <div className="text-center py-12">
+              <div className="inline-block p-4 border border-[#FF2A5F]/20 bg-[#FF2A5F]/5 rounded-full mb-4">
+                <svg className="h-8 w-8 text-[#FF2A5F] animate-pulse-soft" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
               </div>
-              <div className="w-full bg-[#0A0F0D] h-2 border border-[#152219] p-[1px]">
-                <div
-                  className="bg-[#00D4AA] h-full transition-all duration-500"
-                  style={{ width: `${(loadingStep / 4) * 100}%` }}
-                ></div>
-              </div>
-              <p className="text-center font-mono text-xs text-[#7FB89A] uppercase tracking-wide">
-                {loadingStep === 1 && "Client-side FHE key generation & user parameter encryption..."}
-                {loadingStep === 2 && "Executing homomorphic risk inference on server (Zero Plaintext Exposure)..."}
-                {loadingStep === 3 && "Invoking on-chain PreTxGate.sol risk acknowledgment..."}
-                {loadingStep === 4 && "Broadcasting cryptographic audit receipt to RiskLog.sol..."}
-              </p>
-            </div>
-          </div>
-        ) : result ? (
-          /* Verification Success Screen */
-          <div className="space-y-6">
-            <div className="p-4 border border-[#152219] bg-[#0A0F0D] text-center">
-              <div className="font-mono text-xs text-[#7FB89A] uppercase mb-2">RISK EVALUATION COMPLETE</div>
-              <span
-                className={`font-mono text-2xl font-bold tracking-widest px-4 py-1 border ${
-                  result.riskLevel === 'LOW'
-                    ? 'border-[#00D4AA] text-[#00D4AA]'
-                    : result.riskLevel === 'MEDIUM'
-                    ? 'border-[#FFA502] text-[#FFA502]'
-                    : 'border-[#FF4757] text-[#FF4757]'
-                }`}
-              >
-                {result.riskLevel} RISK
-              </span>
-            </div>
-
-            {/* Cryptographic telemetry and blockchain hashes */}
-            <div className="space-y-3 font-mono text-xs text-[#7FB89A]">
-              <div className="border border-[#152219] bg-[#0A0F0D]/60 p-3">
-                <span className="text-[#E8F5F0] block mb-1">CIPHERTEXT SHA-256 HASH (ON-CHAIN PROOF)</span>
-                <span className="break-all text-[11px] text-[#00D4AA]">{result.ciphertextHash}</span>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <div className="border border-[#152219] bg-[#0A0F0D]/60 p-3">
-                  <span className="text-[#E8F5F0] block mb-1">PRE-TX GATE TX HASH</span>
-                  <a
-                    href={`https://etherscan.io/tx/${result.gateTxHash}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="break-all text-[11px] text-[#00D4AA] hover:underline"
-                  >
-                    {result.gateTxHash.substring(0, 20)}...
-                  </a>
-                </div>
-
-                <div className="border border-[#152219] bg-[#0A0F0D]/60 p-3">
-                  <span className="text-[#E8F5F0] block mb-1">AUDIT LOG TX HASH</span>
-                  <a
-                    href={`https://etherscan.io/tx/${result.logTxHash}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="break-all text-[11px] text-[#00D4AA] hover:underline"
-                  >
-                    {result.logTxHash.substring(0, 20)}...
-                  </a>
-                </div>
-              </div>
-            </div>
-
-            {/* Collapsible cryptographic details */}
-            <div className="border border-[#152219] bg-[#0F1A16] p-3 shadow-inner">
+              <p className="text-[#8EBF9F] text-sm font-mono mb-6 uppercase tracking-wide">MetaMask Connection Required</p>
               <button
-                type="button"
-                onClick={() => setShowProof(!showProof)}
-                className="w-full text-left font-mono text-xs uppercase text-[#00D4AA] hover:text-[#33E0BB] flex justify-between items-center"
+                onClick={connectWallet}
+                className="font-mono text-xs uppercase px-6 py-3 border border-[#00FFC4] text-[#040807] bg-[#00FFC4] hover:bg-[#66FFD9] hover:border-[#66FFD9] transition-all duration-300 font-bold tracking-widest shadow-[0_0_15px_rgba(0,255,196,0.2)]"
               >
-                <span>{showProof ? "[-] Hide Cryptographic Proof" : "[+] Show Cryptographic Proof"}</span>
-                <span className="text-[10px] text-[#7FB89A]">{showProof ? "COLLAPSE" : "EXPAND"}</span>
+                Connect Wallet
               </button>
-
-              {showProof && (
-                <div className="mt-4 pt-4 border-t border-[#152219] space-y-4 font-mono text-[11px] text-[#7FB89A]">
-                  <div>
-                    <span className="text-[#E8F5F0] block font-bold mb-1">1. DYNAMIC ON-CHAIN SCAN & AI AUDIT FEEDBACK (FEATURE #6)</span>
-                    <div className="bg-[#050A08] p-2.5 border border-[#152219] space-y-1 text-xs">
-                      <div>Protocol Name: <span className="text-[#00D4AA]">{contractReport.name}</span></div>
-                      <div>Dynamic Code Risk Score (Feature #6): <span className="text-[#00D4AA]">{contractReport.contract_code_risk}</span></div>
-                      <div>Verified Solidity: <span className="text-[#00D4AA]">{contractReport.verified ? "YES" : "NO"}</span></div>
-                      <div>Vulnerabilities Detected: <span className="text-[#FF4757]">{contractReport.vulnerabilities}</span></div>
-                    </div>
-                  </div>
-
-                  <div>
-                    <span className="text-[#E8F5F0] block font-bold mb-1">2. CLIENT-SIDE FHE ENCRYPTION (ZERO INTERNET EXPOSURE)</span>
-                    <div className="bg-[#050A08] p-2.5 border border-[#152219] space-y-1 text-xs">
-                      <div>Plaintext Hybrid Feature Vector: <span className="text-[#00D4AA]">{JSON.stringify(result.normalizedFeatures)}</span></div>
-                      <div className="break-all">FHE Private Key: <span className="text-[#7FB89A] italic">[Securely kept in local FHE client enclave]</span></div>
-                      <div className="break-all text-ellipsis overflow-hidden">FHE Ciphertext (Truncated): <span className="text-[#FFA502]">{result.ciphertext.substring(0, 60)}...</span></div>
-                    </div>
-                  </div>
-
-                  <div>
-                    <span className="text-[#E8F5F0] block font-bold mb-1">3. SERVER-SIDE INFERENCE (ZERO-KNOWLEDGE GATEWAY)</span>
-                    <div className="bg-[#050A08] p-2.5 border border-[#152219] space-y-1 text-xs">
-                      <div>Server Inference Path: <span className="text-[#00D4AA]">{BACKEND_URL}/api/verify</span></div>
-                      <div>Decryption Key on Server: <span className="text-[#FF4757] font-bold">ABSENT (Server evaluated logic blindly on ciphertext)</span></div>
-                    </div>
-                  </div>
-                </div>
-              )}
             </div>
-
-            <button
-              onClick={() => setResult(null)}
-              className="w-full font-mono text-xs uppercase py-3 border border-[#00D4AA] text-[#0A0F0D] bg-[#00D4AA] hover:bg-[#33E0BB] hover:border-[#33E0BB] transition-colors duration-200"
-            >
-              New Verification
-            </button>
-          </div>
-        ) : (
-          /* Staking Verification Form */
-          <form onSubmit={handleVerify} className="space-y-4">
-            {errorMsg && (
-              <div className="p-3 border border-[#FF4757] bg-[#FF4757]/10 font-mono text-xs text-[#FF4757]">
-                [ERROR] {errorMsg}
+          ) : loading ? (
+            /* Processing Telemetry Step Indicators */
+            <div className="py-12 flex flex-col items-center">
+              <div className="relative w-20 h-20 mb-8 flex items-center justify-center">
+                <div className="absolute inset-0 border-2 border-[#00FFC4] rounded-full animate-spin-slow border-t-transparent border-b-transparent"></div>
+                <span className="font-mono text-xs text-[#00FFC4] animate-pulse-soft font-bold">&lt;FHE&gt;</span>
               </div>
-            )}
 
-            {/* Smart Contract Selection / Pasting */}
-            <div>
-              <label className="block font-mono text-xs uppercase text-[#7FB89A] mb-1.5">
-                DeFi Target Protocol
-              </label>
-              <select
-                name="protocolSelect"
-                value={formData.protocolSelect}
-                onChange={handleChange}
-                className="w-full bg-[#0A0F0D] border border-[#152219] focus:border-[#00D4AA] focus:outline-none p-2.5 font-mono text-sm text-[#E8F5F0]"
-              >
-                {PRE_LISTED_PROTOCOLS.map((p) => (
-                  <option key={p.address} value={p.address}>{p.name} ({p.address.substring(0, 6)}...{p.address.slice(-4)})</option>
-                ))}
-                <option value="custom">Paste Custom Contract Address</option>
-              </select>
+              <div className="w-full max-w-md space-y-4">
+                <div className="flex items-center justify-between text-[10px] font-mono tracking-wider">
+                  <span className={loadingStep >= 1 ? "text-[#00FFC4] font-bold" : "text-white/20"}>1. ENCRYPT</span>
+                  <span className={loadingStep >= 2 ? "text-[#00FFC4] font-bold" : "text-white/20"}>2. INFER</span>
+                  <span className={loadingStep >= 3 ? "text-[#00FFC4] font-bold" : "text-white/20"}>3. PRE-TX GATE</span>
+                  <span className={loadingStep >= 4 ? "text-[#00FFC4] font-bold" : "text-white/20"}>4. AUDIT</span>
+                </div>
+                <div className="w-full bg-[#040807] h-2 border border-white/10 rounded-full overflow-hidden p-[1px]">
+                  <div
+                    className="bg-gradient-to-r from-[#00FFC4] to-[#66FFD9] h-full transition-all duration-500 rounded-full shadow-[0_0_10px_rgba(0,255,196,0.5)]"
+                    style={{ width: `${(loadingStep / 4) * 100}%` }}
+                  ></div>
+                </div>
+                <p className="text-center font-mono text-xs text-[#8EBF9F] uppercase tracking-wide leading-relaxed min-h-[3rem] pt-2">
+                  {loadingStep === 1 && "Client-side FHE key generation & user parameter encryption..."}
+                  {loadingStep === 2 && "Executing homomorphic risk inference on server (Zero Plaintext Exposure)..."}
+                  {loadingStep === 3 && "Invoking on-chain PreTxGate.sol risk acknowledgment..."}
+                  {loadingStep === 4 && "Broadcasting cryptographic audit receipt to RiskLog.sol..."}
+                </p>
+              </div>
             </div>
-
-            {formData.protocolSelect === 'custom' && (
-              <div className="space-y-2">
-                <label className="block font-mono text-xs uppercase text-[#7FB89A]">
-                  Custom Contract Address (Ethereum/Arbitrum/Polygon)
-                </label>
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    name="customAddress"
-                    value={formData.customAddress}
-                    onChange={handleChange}
-                    placeholder="e.g. 0x87870Bca3..."
-                    className="w-full bg-[#0A0F0D] border border-[#152219] focus:border-[#00D4AA] focus:outline-none p-2.5 font-mono text-sm text-[#E8F5F0]"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => handleScan()}
-                    disabled={scanning}
-                    className="px-4 bg-[#00D4AA] hover:bg-[#33E0BB] text-[#0A0F0D] font-mono text-xs uppercase transition-colors"
+          ) : result ? (
+            /* Verification Success Screen */
+            <div className="space-y-8 animate-pulse-soft/0">
+              <div className="p-6 border border-white/5 bg-[#040807]/60 text-center rounded-lg relative overflow-hidden">
+                <div className="absolute inset-0 bg-radial-gradient(circle, rgba(0, 255, 196, 0.05) 0%, transparent 80%) pointer-events-none"></div>
+                <div className="font-mono text-xs text-[#8EBF9F] uppercase tracking-widest mb-3">RISK EVALUATION COMPLETE</div>
+                <div className="mb-2">
+                  <span
+                    className={`font-mono text-3xl font-extrabold tracking-widest px-6 py-2 border-2 rounded-sm inline-block shadow-lg ${
+                      result.riskLevel === 'LOW'
+                        ? 'border-[#00FFC4] text-[#00FFC4] shadow-[0_0_20px_rgba(0,255,196,0.25)]'
+                        : result.riskLevel === 'MEDIUM'
+                        ? 'border-[#FFAD00] text-[#FFAD00] shadow-[0_0_20px_rgba(255,173,0,0.25)]'
+                        : 'border-[#FF2A5F] text-[#FF2A5F] shadow-[0_0_20px_rgba(255,42,95,0.25)]'
+                    }`}
                   >
-                    {scanning ? "Scanning..." : "Scan"}
-                  </button>
+                    {result.riskLevel} RISK
+                  </span>
                 </div>
               </div>
-            )}
 
-            {/* Security Audit Panel */}
-            {contractReport && (
-              <div className="p-4 border border-[#152219] bg-[#0A0F0D]/60 rounded space-y-3 font-mono text-xs text-[#7FB89A]">
-                <div className="flex justify-between border-b border-[#152219] pb-2 text-[#E8F5F0]">
-                  <span className="font-bold uppercase">DeFi Smart Contract Security Profile</span>
-                  <span className="text-[#00D4AA] font-bold">Feature #6 Audit Level</span>
+              {/* Cryptographic telemetry and blockchain hashes */}
+              <div className="space-y-4 font-mono text-xs text-[#8EBF9F]">
+                <div className="border border-white/5 bg-[#040807]/30 p-4 rounded-md">
+                  <span className="text-[#EBF7F2] block mb-1.5 uppercase font-bold tracking-wider">CIPHERTEXT SHA-256 HASH (ON-CHAIN PROOF)</span>
+                  <span className="break-all text-[11px] text-[#00FFC4] bg-[#040807] p-2 rounded block border border-white/5">{result.ciphertextHash}</span>
                 </div>
-                <div className="grid grid-cols-2 gap-y-2 gap-x-4">
-                  <div>Contract Name: <span className="text-[#E8F5F0]">{contractReport.name}</span></div>
-                  <div>Audit Score: <span className="text-[#00D4AA] font-bold">{contractReport.contract_code_risk}</span></div>
-                  <div>Verified Source: <span className={contractReport.verified ? "text-[#00D4AA]" : "text-[#FF4757]"}>{contractReport.verified ? "YES" : "NO"}</span></div>
-                  <div>Proxy/Upgradeable: <span className="text-[#E8F5F0]">{contractReport.upgradeable ? "YES" : "NO"}</span></div>
-                  <div>Governance Model: <span className="text-[#E8F5F0]">{contractReport.owner_type}</span></div>
-                  <div>Selfdestruct Found: <span className={contractReport.selfdestruct ? "text-[#FF4757]" : "text-[#00D4AA]"}>{contractReport.selfdestruct ? "YES" : "NO"}</span></div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="border border-white/5 bg-[#040807]/30 p-4 rounded-md">
+                    <span className="text-[#EBF7F2] block mb-1.5 uppercase font-bold tracking-wider">PRE-TX GATE TX HASH</span>
+                    <a
+                      href={`https://etherscan.io/tx/${result.gateTxHash}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="break-all text-[11px] text-[#00FFC4] hover:underline bg-[#040807] p-2 rounded block border border-white/5"
+                    >
+                      {result.gateTxHash.substring(0, 24)}...
+                    </a>
+                  </div>
+
+                  <div className="border border-white/5 bg-[#040807]/30 p-4 rounded-md">
+                    <span className="text-[#EBF7F2] block mb-1.5 uppercase font-bold tracking-wider">AUDIT LOG TX HASH</span>
+                    <a
+                      href={`https://etherscan.io/tx/${result.logTxHash}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="break-all text-[11px] text-[#00FFC4] hover:underline bg-[#040807] p-2 rounded block border border-white/5"
+                    >
+                      {result.logTxHash.substring(0, 24)}...
+                    </a>
+                  </div>
                 </div>
-                {contractReport.vulnerabilities && (
-                  <div className="pt-2 border-t border-[#152219] text-[11px] text-[#FFA502]">
-                    <span className="font-bold block mb-1">VULNERABILITY SUMMARY:</span>
-                    {contractReport.vulnerabilities}
+              </div>
+
+              {/* Collapsible cryptographic details */}
+              <div className="border border-white/5 bg-[#040807]/20 p-4 rounded-md">
+                <button
+                  type="button"
+                  onClick={() => setShowProof(!showProof)}
+                  className="w-full text-left font-mono text-xs uppercase text-[#00FFC4] hover:text-[#66FFD9] flex justify-between items-center transition-colors"
+                >
+                  <span className="font-bold tracking-wider">{showProof ? "[-] Hide Cryptographic Proof" : "[+] Show Cryptographic Proof"}</span>
+                  <span className="text-[10px] text-[#8EBF9F] bg-white/5 px-2 py-0.5 rounded">{showProof ? "COLLAPSE" : "EXPAND"}</span>
+                </button>
+
+                {showProof && (
+                  <div className="mt-4 pt-4 border-t border-white/5 space-y-5 font-mono text-[11px] text-[#8EBF9F]">
+                    <div>
+                      <span className="text-[#EBF7F2] block font-bold mb-1.5">1. DYNAMIC ON-CHAIN SCAN & AI AUDIT FEEDBACK (FEATURE #6)</span>
+                      <div className="bg-[#040807] p-3 border border-white/5 rounded space-y-1.5 text-xs">
+                        <div>Protocol Name: <span className="text-[#00FFC4]">{contractReport.name}</span></div>
+                        <div>Dynamic Code Risk Score (Feature #6): <span className="text-[#00FFC4]">{contractReport.contract_code_risk}</span></div>
+                        <div>Verified Solidity: <span className="text-[#00FFC4]">{contractReport.verified ? "YES" : "NO"}</span></div>
+                        <div>Vulnerabilities Detected: <span className="text-[#FF2A5F]">{contractReport.vulnerabilities}</span></div>
+                      </div>
+                    </div>
+
+                    <div>
+                      <span className="text-[#EBF7F2] block font-bold mb-1.5">2. CLIENT-SIDE FHE ENCRYPTION (ZERO INTERNET EXPOSURE)</span>
+                      <div className="bg-[#040807] p-3 border border-white/5 rounded space-y-1.5 text-xs">
+                        <div>Plaintext Hybrid Feature Vector: <span className="text-[#00FFC4]">{JSON.stringify(result.normalizedFeatures)}</span></div>
+                        <div className="break-all">FHE Private Key: <span className="text-[#8EBF9F] italic">[Securely kept in local FHE client enclave]</span></div>
+                        <div className="break-all text-ellipsis overflow-hidden">FHE Ciphertext (Truncated): <span className="text-[#FFAD00]">{result.ciphertext.substring(0, 80)}...</span></div>
+                      </div>
+                    </div>
+
+                    <div>
+                      <span className="text-[#EBF7F2] block font-bold mb-1.5">3. SERVER-SIDE INFERENCE (ZERO-KNOWLEDGE GATEWAY)</span>
+                      <div className="bg-[#040807] p-3 border border-white/5 rounded space-y-1.5 text-xs">
+                        <div>Server Inference Path: <span className="text-[#00FFC4]">{BACKEND_URL}/api/verify</span></div>
+                        <div>Decryption Key on Server: <span className="text-[#FF2A5F] font-bold">ABSENT (Server evaluated logic blindly on ciphertext)</span></div>
+                      </div>
+                    </div>
                   </div>
                 )}
               </div>
-            )}
 
-            {/* Staking Amount */}
-            <div>
-              <label className="block font-mono text-xs uppercase text-[#7FB89A] mb-1.5">
-                Staking / Investment Amount (USD)
-              </label>
-              <input
-                type="number"
-                name="amount"
-                value={formData.amount}
-                onChange={handleChange}
-                required
-                min="1"
-                placeholder="e.g. 5000"
-                className="w-full bg-[#0A0F0D] border border-[#152219] focus:border-[#00D4AA] focus:outline-none p-2.5 font-mono text-sm text-[#E8F5F0]"
-              />
+              <button
+                onClick={() => setResult(null)}
+                className="w-full font-mono text-xs uppercase py-3.5 border border-[#00FFC4] text-[#040807] bg-[#00FFC4] hover:bg-[#66FFD9] hover:border-[#66FFD9] transition-all duration-300 font-bold tracking-widest shadow-[0_0_15px_rgba(0,255,196,0.15)] rounded-sm"
+              >
+                New Verification
+              </button>
             </div>
+          ) : (
+            /* Staking Verification Form */
+            <form onSubmit={handleVerify} className="space-y-6">
+              {errorMsg && (
+                <div className="p-3 border border-[#FF2A5F] bg-[#FF2A5F]/10 font-mono text-xs text-[#FF2A5F] rounded">
+                  [ERROR] {errorMsg}
+                </div>
+              )}
 
-            {/* Portfolio Concentration Slider */}
-            <div>
-              <div className="flex justify-between font-mono text-xs uppercase text-[#7FB89A] mb-1">
-                <span>Portfolio Concentration</span>
-                <span className="text-[#00D4AA]">{formData.portfolioConcentration}%</span>
+              {/* Smart Contract Selection / Pasting */}
+              <div className="space-y-2">
+                <label className="block font-mono text-xs uppercase text-[#8EBF9F] tracking-wider font-bold">
+                  DeFi Target Protocol
+                </label>
+                <select
+                  name="protocolSelect"
+                  value={formData.protocolSelect}
+                  onChange={handleChange}
+                  className="w-full bg-[#040807] border border-white/10 focus:border-[#00FFC4] focus:outline-none p-3 font-mono text-sm text-[#EBF7F2] rounded-md transition-colors"
+                >
+                  {PRE_LISTED_PROTOCOLS.map((p) => (
+                    <option key={p.address} value={p.address}>{p.name} ({p.address.substring(0, 6)}...{p.address.slice(-4)})</option>
+                  ))}
+                  <option value="custom">Paste Custom Contract Address</option>
+                </select>
               </div>
-              <input
-                type="range"
-                name="portfolioConcentration"
-                min="1"
-                max="100"
-                value={formData.portfolioConcentration}
-                onChange={handleChange}
-                className="w-full accent-[#00D4AA]"
-              />
-            </div>
 
-            {/* Submit Button */}
-            <button
-              type="submit"
-              disabled={!contractReport || scanning}
-              className="w-full font-mono text-xs uppercase py-3 border border-[#00D4AA] text-[#0A0F0D] bg-[#00D4AA] hover:bg-[#33E0BB] hover:border-[#33E0BB] transition-colors duration-200 glow-teal hover:glow-teal-strong mt-6 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              Encrypt & Verify Staking Risk
-            </button>
-          </form>
-        )}
+              {formData.protocolSelect === 'custom' && (
+                <div className="space-y-2">
+                  <label className="block font-mono text-xs uppercase text-[#8EBF9F] tracking-wider font-bold">
+                    Custom Contract Address (Ethereum/Arbitrum/Polygon)
+                  </label>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      name="customAddress"
+                      value={formData.customAddress}
+                      onChange={handleChange}
+                      placeholder="e.g. 0x87870Bca3..."
+                      className="w-full bg-[#040807] border border-white/10 focus:border-[#00FFC4] focus:outline-none p-3 font-mono text-sm text-[#EBF7F2] rounded-md transition-colors"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => handleScan()}
+                      disabled={scanning}
+                      className="px-6 bg-[#00FFC4] hover:bg-[#66FFD9] text-[#040807] font-mono text-xs uppercase font-bold tracking-widest transition-colors rounded-sm shadow-[0_0_10px_rgba(0,255,196,0.15)]"
+                    >
+                      {scanning ? "Scanning..." : "Scan"}
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Security Audit Panel */}
+              {contractReport && (
+                <div className="p-5 border border-white/5 bg-[#040807]/40 rounded-lg space-y-4 font-mono text-xs text-[#8EBF9F]">
+                  <div className="flex justify-between border-b border-white/5 pb-2 text-[#EBF7F2]">
+                    <span className="font-bold uppercase tracking-wider">DeFi Smart Contract Security Profile</span>
+                    <span className="text-[#00FFC4] font-bold tracking-wider">Feature #6 Audit Level</span>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-3">
+                      <div>Contract Name: <span className="text-[#EBF7F2] font-semibold">{contractReport.name}</span></div>
+                      <div>Verified Source: <span className={contractReport.verified ? "text-[#00FFC4] font-semibold" : "text-[#FF2A5F] font-semibold"}>{contractReport.verified ? "YES" : "NO"}</span></div>
+                      <div>Proxy/Upgradeable: <span className="text-[#EBF7F2]">{contractReport.upgradeable ? "YES" : "NO"}</span></div>
+                      <div>Governance Model: <span className="text-[#EBF7F2]">{contractReport.owner_type}</span></div>
+                      <div>Selfdestruct Found: <span className={contractReport.selfdestruct ? "text-[#FF2A5F] font-bold" : "text-[#00FFC4] font-semibold"}>{contractReport.selfdestruct ? "YES" : "NO"}</span></div>
+                    </div>
+                    
+                    <div className="space-y-3 bg-[#040807]/60 p-4 border border-white/5 rounded-md">
+                      <div className="flex justify-between">
+                        <span>AI Code Risk:</span>
+                        <span className="text-[#00FFC4] font-bold">{contractReport.contract_code_risk}</span>
+                      </div>
+                      <div className="w-full bg-[#040807] h-1.5 border border-white/5 rounded-full overflow-hidden">
+                        <div className="bg-[#00FFC4] h-full" style={{ width: `${contractReport.contract_code_risk * 100}%` }}></div>
+                      </div>
+
+                      <div className="flex justify-between pt-1">
+                        <span>Reentrancy Risk:</span>
+                        <span className="text-[#00FFC4] font-bold">{contractReport.reentrancy_risk}</span>
+                      </div>
+                      <div className="w-full bg-[#040807] h-1.5 border border-white/5 rounded-full overflow-hidden">
+                        <div className="bg-[#00FFC4] h-full" style={{ width: `${contractReport.reentrancy_risk * 100}%` }}></div>
+                      </div>
+
+                      <div className="flex justify-between pt-1">
+                        <span>Admin Privileges:</span>
+                        <span className="text-[#00FFC4] font-bold">{contractReport.admin_privileges}</span>
+                      </div>
+                      <div className="w-full bg-[#040807] h-1.5 border border-white/5 rounded-full overflow-hidden">
+                        <div className="bg-[#00FFC4] h-full" style={{ width: `${contractReport.admin_privileges * 100}%` }}></div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {contractReport.vulnerabilities && (
+                    <div className="pt-3 border-t border-white/5 text-[11px] text-[#FFAD00] bg-[#FFAD00]/5 p-3 rounded-md border border-[#FFAD00]/10">
+                      <span className="font-bold block mb-1 tracking-wider">VULNERABILITY SUMMARY:</span>
+                      {contractReport.vulnerabilities}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Staking Amount */}
+              <div className="space-y-2">
+                <label className="block font-mono text-xs uppercase text-[#8EBF9F] tracking-wider font-bold">
+                  Staking / Investment Amount (USD)
+                </label>
+                <input
+                  type="number"
+                  name="amount"
+                  value={formData.amount}
+                  onChange={handleChange}
+                  required
+                  min="1"
+                  placeholder="e.g. 5000"
+                  className="w-full bg-[#040807] border border-white/10 focus:border-[#00FFC4] focus:outline-none p-3 font-mono text-sm text-[#EBF7F2] rounded-md transition-colors"
+                />
+              </div>
+
+              {/* Portfolio Concentration Slider */}
+              <div className="space-y-2">
+                <div className="flex justify-between font-mono text-xs uppercase text-[#8EBF9F] tracking-wider font-bold">
+                  <span>Portfolio Concentration</span>
+                  <span className="text-[#00FFC4] font-bold">{formData.portfolioConcentration}%</span>
+                </div>
+                <input
+                  type="range"
+                  name="portfolioConcentration"
+                  min="1"
+                  max="100"
+                  value={formData.portfolioConcentration}
+                  onChange={handleChange}
+                  className="w-full accent-[#00FFC4] cursor-pointer"
+                />
+              </div>
+
+              {/* Submit Button */}
+              <button
+                type="submit"
+                disabled={!contractReport || scanning}
+                className="w-full font-mono text-xs uppercase py-3.5 border border-[#00FFC4] text-[#040807] bg-[#00FFC4] hover:bg-[#66FFD9] hover:border-[#66FFD9] transition-all duration-300 font-bold tracking-widest shadow-[0_0_15px_rgba(0,255,196,0.15)] rounded-sm disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Encrypt & Verify Staking Risk
+              </button>
+            </form>
+          )}
+        </div>
       </div>
     </div>
   );
