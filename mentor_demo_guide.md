@@ -78,3 +78,34 @@ Use this table/list to answer architecture questions:
 > 1. **Solidity Code Retrieval:** When you scan an address, the backend queries Etherscan to fetch the smart contract's verified Solidity source code.
 > 2. **AI-Driven Vulnerability Audit:** The backend sends the first 10,000 characters of the Solidity code to Google Gemini. Gemini audits the code for vulnerabilities (like reentrancy attack vectors, centralization of admin keys, proxy upgradeability safety, and dangerous functions like `selfdestruct`). It outputs a qualitative analysis explanation (displayed in the UI) and a quantitative **Code Vulnerability Score (scaled between 0.0 and 1.0)**.
 > 3. **Homomorphic Input:** This score becomes **Feature 6 (`contract_code_risk`)**. The local client daemon packages it with your private FHE inputs (amount and portfolio concentration) to compile a unified feature vector. This ensures the FHE ML model classifies risk based on both private user parameters and live contract security data.
+
+---
+
+## 🌟 5. Key Demo Features (What to Highlight)
+Highlight these 6 core features to show a complete, robust system:
+1.  **MetaMask Connection & RPC Routing:** Connects dynamically to the local blockchain node using Ethers.js, routing transactions directly via the user's browser.
+2.  **On-the-Fly Contract Scanning:** Paste any custom Ethereum contract address to instantly trigger a verified source code retrieval and security analysis.
+3.  **Local FHE Key Enclave:** Private keys are generated and cached in the client daemon (`localhost:5001`), ensuring that the model server has zero knowledge of the keys.
+4.  **Blind Machine Learning Inference:** The backend server runs homomorphic Logistic Regression directly on encrypted feature vectors, returning an encrypted result.
+5.  **Unified Blockchain Log Gatekeeper:** Writes transaction ciphertext hashes and risk scores on-chain, creating a decentralized and auditable security checklist.
+6.  **Immutable Audit Verification Screen:** The ledger history page dynamically indexes past logs and allows you to view details of any audit receipt.
+
+---
+
+## 🛠️ 6. Major Backend Improvements Implemented
+We implemented two significant production-grade improvements in the backend architecture:
+1.  **Consolidated Smart Contract Gateway:**
+    *   *Before:* The user had to click and approve two separate MetaMask transactions sequentially—one to `PreTxGate.sol` (acknowledgment) and one to `RiskLog.sol` (logging).
+    *   *Improvement:* We modified `RiskLog.sol` to support delegated logging (`createLogForUser`) and updated `PreTxGate.sol` to act as a unified entry-point. Calling `PreTxGate.acknowledgeAndLog` now handles both actions in a **single transaction**, reducing MetaMask prompts to a single approval and cutting down gas fees.
+2.  **Rate-Limit Fail-Safe (Heuristic Scanner Fallback):**
+    *   *Before:* If the Google Gemini API free-tier hit a rate limit (429) during code analysis, the backend returned a 500 error, crashing the UI.
+    *   *Improvement:* We corrected the analyzer workflow in `backend/analyzer.py`. The server now catches API exceptions gracefully and falls back to a local regex-based heuristic security scanner (assessing proxies, owners, and selfdestruct functions) to determine code risk without crashing.
+
+---
+
+## 🔍 7. The Crucial Role of Etherscan V2
+Etherscan plays a vital role in our transaction scoring pipeline:
+*   **Decentralized Source Repository:** Instead of forcing developers to upload contract source files manually, the backend uses **Etherscan V2 APIs** to fetch the verified smart contract source code dynamically.
+*   **Verification Engine:** By validating that the bytecode matches verified Solidity code on Etherscan, the backend confirms the contract's legitimacy.
+*   **Multi-Chain Compatibility:** It queries both **Ethereum Mainnet Etherscan** and **Arbitrum Arbiscan** APIs to support multi-chain contract evaluations.
+
