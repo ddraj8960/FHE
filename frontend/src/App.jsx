@@ -6,8 +6,7 @@ import Verify from './pages/Verify';
 import History from './pages/History';
 import Audit from './pages/Audit';
 import axios from 'axios';
-
-const CLIENT_DAEMON_URL = 'http://localhost:5001';
+import { CLIENT_DAEMON_URL } from './config';
 
 function App() {
   const [walletAddress, setWalletAddress] = useState('');

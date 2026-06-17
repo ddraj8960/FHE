@@ -1,14 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { ethers } from 'ethers';
-
-// Setup local endpoints and contract ABI details
-const BACKEND_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
-const CLIENT_DAEMON_URL = 'http://localhost:5001';
-
-const CONTRACT_ADDRESS = import.meta.env.VITE_CONTRACT_ADDRESS;
-const REGISTRY_ADDRESS = import.meta.env.VITE_REGISTRY_ADDRESS;
-const GATE_ADDRESS = import.meta.env.VITE_GATE_ADDRESS;
+import { BACKEND_URL, CLIENT_DAEMON_URL, CONTRACT_ADDRESS, REGISTRY_ADDRESS, GATE_ADDRESS } from '../config';
+import { getInvestmentRange, getRiskPanelClass } from '../utils/risk';
 
 // ABI for Contracts
 const RISK_LOG_ABI = [
@@ -164,10 +158,7 @@ export default function Verify({ walletAddress, connectWallet }) {
       await addLog("\n>>> ESTABLISHING SERVER CONTEXT...", 200);
       await addLog("Broadcasting LWE Ciphertext and Evaluation Key (Plaintext metrics remain 100% hidden)...", 300);
 
-      let investmentRange = "Under 10K";
-      if (amt >= 10000 && amt < 50000) investmentRange = "10K-50K";
-      else if (amt >= 50000 && amt < 200000) investmentRange = "50K-200K";
-      else if (amt >= 200000) investmentRange = "Over 200K";
+      const investmentRange = getInvestmentRange(amt);
 
       const verifyRes = await axios.post(`${BACKEND_URL}/api/verify`, {
         ciphertext: ciphertext,
@@ -326,12 +317,7 @@ export default function Verify({ walletAddress, connectWallet }) {
     await addLog("Staking transaction safely aborted by user. Form reset.", 100);
   };
 
-  // Helper colors for risk status
-  const getRiskColorClass = (riskLevel) => {
-    if (riskLevel === 'LOW') return 'border-[#C0FF00] text-[#C0FF00] bg-[#C0FF00]/5 shadow-[0_0_20px_rgba(192,255,0,0.08)]';
-    if (riskLevel === 'MEDIUM') return 'border-[#FF5A00] text-[#FF5A00] bg-[#FF5A00]/5 shadow-[0_0_20px_rgba(255,90,0,0.08)]';
-    return 'border-[#FF2A5F] text-[#FF2A5F] bg-[#FF2A5F]/5 shadow-[0_0_25px_rgba(255,42,95,0.1)]';
-  };
+  const getRiskColorClass = getRiskPanelClass;
 
   const getMeterColorClass = (score) => {
     if (score < 0.25) return 'bg-[#C0FF00]';

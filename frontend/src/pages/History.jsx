@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
-
-const BACKEND_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+import { BACKEND_URL } from '../config';
+import { getRiskBadgeClass } from '../utils/risk';
 
 export default function History({ walletAddress }) {
   const [history, setHistory] = useState([]);
@@ -90,13 +90,7 @@ export default function History({ walletAddress }) {
                       <td className="py-4 px-3">{tx.investment_range}</td>
                       <td className="py-4 px-3">
                         <span
-                          className={`px-2 py-0.5 border text-[9px] font-bold rounded ${
-                            tx.risk_result === 'LOW'
-                              ? 'border-[#C0FF00]/20 text-[#C0FF00] bg-[#C0FF00]/5'
-                              : tx.risk_result === 'MEDIUM'
-                              ? 'border-[#FFB300]/20 text-[#FFB300] bg-[#FFB300]/5'
-                              : 'border-[#FF2A5F]/20 text-[#FF2A5F] bg-[#FF2A5F]/5'
-                          }`}
+                          className={`px-2 py-0.5 border text-[9px] font-bold rounded ${getRiskBadgeClass(tx.risk_result)}`}
                         >
                           {tx.risk_result}
                         </span>
