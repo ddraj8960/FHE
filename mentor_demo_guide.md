@@ -72,3 +72,9 @@ Use this table/list to answer architecture questions:
 
 ### Q5: Why is MetaMask displaying 'ETH' for gas fees instead of Polygon 'MATIC'?
 > **Answer:** The project is architected for the Polygon Amoy Network (where MATIC is the native gas token). However, to run the demo locally with zero costs, high speed, and offline reliability, we run a local Hardhat Node. By default, Hardhat simulates the standard Ethereum Mainnet configuration, which uses **ETH** as the native currency symbol. MetaMask displays the gas fee in simulated test ETH (provided automatically for free by the Hardhat local node for development purposes).
+
+### Q6: How does the "AI Audit Score Explanation" work under the hood, and how is it used in the FHE model?
+> **Answer:** 
+> 1. **Solidity Code Retrieval:** When you scan an address, the backend queries Etherscan to fetch the smart contract's verified Solidity source code.
+> 2. **AI-Driven Vulnerability Audit:** The backend sends the first 10,000 characters of the Solidity code to Google Gemini. Gemini audits the code for vulnerabilities (like reentrancy attack vectors, centralization of admin keys, proxy upgradeability safety, and dangerous functions like `selfdestruct`). It outputs a qualitative analysis explanation (displayed in the UI) and a quantitative **Code Vulnerability Score (scaled between 0.0 and 1.0)**.
+> 3. **Homomorphic Input:** This score becomes **Feature 6 (`contract_code_risk`)**. The local client daemon packages it with your private FHE inputs (amount and portfolio concentration) to compile a unified feature vector. This ensures the FHE ML model classifies risk based on both private user parameters and live contract security data.
