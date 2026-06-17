@@ -1,22 +1,18 @@
 import os
+import sys
 import hashlib
 import numpy as np
 from fastapi import FastAPI, HTTPException
-from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import List
+
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from shared.cors import add_cors_middleware
 
 from concrete.ml.deployment import FHEModelClient
 
 app = FastAPI(title="WalletShield Client FHE Daemon", version="1.0.0")
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+add_cors_middleware(app)
 
 MODEL_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "fhe", "compiled_model")
 if not os.path.exists(MODEL_DIR):

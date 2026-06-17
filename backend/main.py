@@ -1,11 +1,14 @@
 import os
+import sys
 import uuid
 import hashlib
 from fastapi import FastAPI, Depends, HTTPException
-from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from typing import List, Dict, Any
 from pydantic import BaseModel
+
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from shared.cors import add_cors_middleware
 
 # Custom lightweight .env loader to support local API key setups
 def load_dotenv():
@@ -31,15 +34,7 @@ from concrete.ml.deployment import FHEModelServer
 models.Base.metadata.create_all(bind=database.engine)
 
 app = FastAPI(title="WalletShield DeFi Risk Oracle Backend", version="2.0.0")
-
-# Setup CORS so the React frontend can communicate with the server
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+add_cors_middleware(app)
 
 # Load Concrete ML FHE Model Server (configured for 6-feature DeFi model)
 MODEL_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "fhe", "compiled_model")

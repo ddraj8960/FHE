@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import axios from 'axios';
-
-const BACKEND_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+import { BACKEND_URL } from '../config';
+import { getRiskColor } from '../utils/risk';
 
 export default function Audit() {
   const { id } = useParams();
@@ -105,13 +105,7 @@ export default function Audit() {
                   <div className="border border-[#222222] bg-[#090909] p-4 rounded">
                     <span className="text-[10px] text-[#909090] block uppercase tracking-widest mb-1.5 font-bold">Risk Result</span>
                     <span
-                      className={`text-xs font-bold ${
-                        record.risk_result === 'LOW'
-                          ? 'text-[#C0FF00]'
-                          : record.risk_result === 'MEDIUM'
-                          ? 'text-[#FFB300]'
-                          : 'text-[#FF2A5F]'
-                      }`}
+                      className={`text-xs font-bold ${getRiskColor(record.risk_result)}`}
                     >
                       {record.risk_result}
                     </span>

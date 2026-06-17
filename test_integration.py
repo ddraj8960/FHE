@@ -1,6 +1,11 @@
+import os
+import sys
 import requests
 import json
 import time
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from shared.risk import RISK_LABELS
 
 BACKEND_URL = "http://localhost:8000"
 CLIENT_DAEMON_URL = "http://localhost:5001"
@@ -92,8 +97,7 @@ def run_integration_test():
         
     decrypt_data = res.json()
     prediction = decrypt_data['prediction']
-    risk_mapping = {0: "LOW", 1: "MEDIUM", 2: "HIGH"}
-    final_risk = risk_mapping.get(prediction, "UNKNOWN")
+    final_risk = RISK_LABELS.get(prediction, "UNKNOWN")
     
     print(f"Decryption successful!")
     print(f" => Predicted Risk Level: {final_risk} (Model Prediction Class: {prediction})")
