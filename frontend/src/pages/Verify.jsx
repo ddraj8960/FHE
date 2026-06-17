@@ -17,7 +17,8 @@ const RISK_LOG_ABI = [
 ];
 
 const PRE_TX_GATE_ABI = [
-  "function acknowledgeRisk(address _protocol, string calldata _riskLevel) external"
+  "function acknowledgeRisk(address _protocol, string calldata _riskLevel) external",
+  "function acknowledgeAndLog(address _protocol, bytes32 _payloadHash, string calldata _riskLevel) external"
 ];
 
 // Pre-listed protocols for quick select
@@ -243,10 +244,10 @@ export default function Verify({ walletAddress, connectWallet }) {
     setErrorMsg('');
 
     try {
-      // Step 3: Call Pre-Transaction Gate Contract (Acknowledge Risk)
+      // Step 3: Call Pre-Transaction Gate & Log Audit Trail (Combined Transaction)
       setLoadingStep(3);
-      await addLog("\n>>> CALLING SMART CONTRACT RISK GATES...", 300);
-      await addLog(`[METAMASK] Requesting signature: PreTxGate.acknowledgeRisk(${fheResult.riskLevel})...`, 300);
+      await addLog("\n>>> CALLING SMART CONTRACT GATEWAY...", 300);
+      await addLog(`[METAMASK] Requesting signature: PreTxGate.acknowledgeAndLog(protocol, hash, ${fheResult.riskLevel})...`, 300);
 
       if (!window.ethereum) {
         throw new Error("MetaMask is not installed. Unable to execute blockchain transactions.");
@@ -256,27 +257,15 @@ export default function Verify({ walletAddress, connectWallet }) {
       const signer = await provider.getSigner();
       
       const preTxGate = new ethers.Contract(GATE_ADDRESS, PRE_TX_GATE_ABI, signer);
-      const gateTx = await preTxGate.acknowledgeRisk(fheResult.targetAddress, fheResult.riskLevel);
-      
-      await addLog(`Pre-staking gate transaction broadcast: ${gateTx.hash}`, 200);
-      await addLog("Waiting for block confirmation...", 400);
-      await gateTx.wait();
-      await addLog("[CHAIN] Pre-staking gate transaction confirmed.", 250);
-
-      // Step 4: Write Audit Trail to RiskLog Contract
-      setLoadingStep(4);
-      await addLog(`\n>>> COMMITTING IMMUTABLE RISK LOG RECEIPT...`, 200);
-      await addLog(`[METAMASK] Requesting signature: RiskLog.createLog(hash, ${fheResult.riskLevel})...`, 250);
-      
-      const riskLog = new ethers.Contract(CONTRACT_ADDRESS, RISK_LOG_ABI, signer);
       let hexHash = fheResult.ciphertextHash.startsWith('0x') ? fheResult.ciphertextHash : `0x${fheResult.ciphertextHash}`;
       
-      const logTx = await riskLog.createLog(hexHash, fheResult.riskLevel);
-      await addLog(`Audit Log transaction broadcast: ${logTx.hash}`, 200);
+      const tx = await preTxGate.acknowledgeAndLog(fheResult.targetAddress, hexHash, fheResult.riskLevel);
+      
+      await addLog(`Gateway transaction broadcast: ${tx.hash}`, 200);
       await addLog("Waiting for block confirmation...", 400);
       
-      const receipt = await logTx.wait();
-      await addLog("[CHAIN] Audit log committed successfully.", 200);
+      const receipt = await tx.wait();
+      await addLog("[CHAIN] Gateway transaction confirmed, risk acknowledged & audit log committed.", 250);
 
       await addLog("Synchronizing validation proof with backend database...", 200);
       await axios.post(`${BACKEND_URL}/api/blockchain/confirm`, {
@@ -290,7 +279,7 @@ export default function Verify({ walletAddress, connectWallet }) {
         id: fheResult.id,
         riskLevel: fheResult.riskLevel,
         ciphertextHash: fheResult.ciphertextHash,
-        gateTxHash: gateTx.hash,
+        gateTxHash: receipt.hash,
         logTxHash: receipt.hash,
         normalizedFeatures: fheResult.normalizedFeatures,
         ciphertext: fheResult.ciphertext,
@@ -751,8 +740,7 @@ export default function Verify({ walletAddress, connectWallet }) {
                   <span>
                     {loadingStep === 1 && "FHE evaluation active - encrypting feature vectors locally..."}
                     {loadingStep === 2 && "FHE evaluation active - running server blind inference..."}
-                    {loadingStep === 3 && "Blockchain transaction active - awaiting gate signature..."}
-                    {loadingStep === 4 && "Blockchain transaction active - committing audit log..."}
+                    {loadingStep === 3 && "Blockchain transaction active - signing & committing audit gate..."}
                     {loadingStep === 0 && "Active processing..."}
                   </span>
                 </div>

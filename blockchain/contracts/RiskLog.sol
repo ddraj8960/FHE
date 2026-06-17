@@ -33,6 +33,22 @@ contract RiskLog {
         emit LogCreated(currentId, msg.sender, riskLevel);
     }
 
+    function createLogForUser(address user, bytes32 payloadHash, string memory riskLevel) external {
+        uint256 currentId = logCount;
+        RiskLogEntry memory newLog = RiskLogEntry({
+            wallet: user,
+            payloadHash: payloadHash,
+            riskLevel: riskLevel,
+            timestamp: block.timestamp
+        });
+
+        logs[currentId] = newLog;
+        userLogs[user].push(newLog);
+        logCount++;
+
+        emit LogCreated(currentId, user, riskLevel);
+    }
+
     function getLog(uint256 id) external view returns (RiskLogEntry memory) {
         require(id < logCount, "Log does not exist");
         return logs[id];

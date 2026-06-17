@@ -3,6 +3,7 @@ pragma solidity ^0.8.20;
 
 interface IRiskLog {
     function logCount() external view returns (uint256);
+    function createLogForUser(address user, bytes32 payloadHash, string calldata riskLevel) external;
 }
 
 contract PreTxGate {
@@ -49,6 +50,21 @@ contract PreTxGate {
         });
 
         emit RiskAcknowledged(msg.sender, _protocol, _riskLevel, block.timestamp);
+    }
+
+    function acknowledgeAndLog(address _protocol, bytes32 _payloadHash, string calldata _riskLevel) external {
+        userAcknowledgments[msg.sender][_protocol] = RiskAcknowledgment({
+            protocol: _protocol,
+            riskLevel: _riskLevel,
+            timestamp: block.timestamp,
+            acknowledged: true
+        });
+
+        emit RiskAcknowledged(msg.sender, _protocol, _riskLevel, block.timestamp);
+
+        if (riskLogAddress != address(0)) {
+            IRiskLog(riskLogAddress).createLogForUser(msg.sender, _payloadHash, _riskLevel);
+        }
     }
 
     function checkAcknowledgment(address _wallet, address _protocol) external view returns (bool, string memory) {

@@ -45,3 +45,42 @@ describe("RiskLog Contract", function () {
     expect(addr1Logs[0].payloadHash).to.equal(hash2);
   });
 });
+
+describe("PreTxGate Contract", function () {
+  let riskLog;
+  let preTxGate;
+  let owner;
+  let addr1;
+
+  beforeEach(async function () {
+    const RiskLog = await ethers.getContractFactory("RiskLog");
+    riskLog = await RiskLog.deploy();
+    await riskLog.waitForDeployment();
+    const riskLogAddress = await riskLog.getAddress();
+
+    const PreTxGate = await ethers.getContractFactory("PreTxGate");
+    preTxGate = await PreTxGate.deploy(riskLogAddress);
+    await preTxGate.waitForDeployment();
+
+    [owner, addr1] = await ethers.getSigners();
+  });
+
+  it("Should successfully acknowledge and write a log entry in a single transaction", async function () {
+    const protocolAddress = "0x87870Bca3F3fD6335C3F4ce8392D69350B4fA4E2";
+    const payloadHash = ethers.keccak256(ethers.toUtf8Bytes("test_payload"));
+    const riskLevel = "MEDIUM";
+
+    const tx = await preTxGate.acknowledgeAndLog(protocolAddress, payloadHash, riskLevel);
+    await tx.wait();
+
+    const [acknowledged, level] = await preTxGate.checkAcknowledgment(owner.address, protocolAddress);
+    expect(acknowledged).to.be.true;
+    expect(level).to.equal(riskLevel);
+
+    expect(await riskLog.logCount()).to.equal(1);
+    const entry = await riskLog.getLog(0);
+    expect(entry.wallet).to.equal(owner.address);
+    expect(entry.payloadHash).to.equal(payloadHash);
+    expect(entry.riskLevel).to.equal(riskLevel);
+  });
+});
