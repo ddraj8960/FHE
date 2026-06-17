@@ -259,8 +259,8 @@ def run_llm_code_audit(contract_name: str, source_code: str) -> Dict[str, Any]:
         except Exception as e:
             print(f"OpenRouter API call failed: {e}.")
 
-    # If both keys are missing or calls failed, raise exception to trigger fallback heuristics
-    raise RuntimeError("No working LLM API keys configured or request failed.")
+    # If both keys are missing or calls failed, fall back to heuristic scan
+    print("No working LLM API keys configured or request failed. Executing fail-safe heuristic fallback...")
         
     # Fail-safe fallback: generate reasonable values based on regex keyword analysis
     has_proxy = "proxy" in source_code.lower() or "implementation" in source_code.lower()
