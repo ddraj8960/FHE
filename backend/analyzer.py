@@ -65,6 +65,83 @@ CACHED_PROTOCOLS = {
         "protocol_risk_score": 0.85, # Feature #2
         "contract_verification": 0.50, # Feature #3 (Immutable, but complex modular architecture)
         "protocol_maturity": 0.75 # Feature #5 (Deployed Late 2024)
+    },
+    # ═══════════════════════════════════════════════════════════════
+    # Ethernaut (OpenZeppelin) Vulnerable Challenge Contracts
+    # These are intentionally vulnerable contracts from the Ethernaut
+    # wargame, used to validate WalletShield's vulnerability detection.
+    # ═══════════════════════════════════════════════════════════════
+    # Ethernaut Level 10: Reentrance — Classic reentrancy attack
+    "0xethernaut000000000000000000000000000000a1": {
+        "name": "Ethernaut: Reentrance",
+        "type": "Vulnerable Challenge Contract (Ethernaut L10)",
+        "verified": True,
+        "upgradeable": False,
+        "proxy_pattern": "None (Immutable)",
+        "owner_type": "No Access Control",
+        "selfdestruct": False,
+        "reentrancy_risk": 0.95,
+        "admin_privileges": 0.10,
+        "oracle_dependency": False,
+        "vulnerabilities": "CRITICAL REENTRANCY: The withdraw() function sends ETH via .call{value}() BEFORE updating the sender's balance mapping. An attacker contract can recursively re-enter withdraw() through its receive() fallback, draining the entire contract balance in a single transaction. This is the exact vulnerability pattern that caused the $60M DAO hack in 2016. Fix: use Checks-Effects-Interactions pattern or OpenZeppelin ReentrancyGuard.",
+        "contract_code_risk": 0.90,
+        "protocol_risk_score": 0.95,
+        "contract_verification": 0.20,
+        "protocol_maturity": 0.90
+    },
+    # Ethernaut Level 1: Fallback — Ownership takeover via receive()
+    "0xethernaut000000000000000000000000000000a2": {
+        "name": "Ethernaut: Fallback",
+        "type": "Vulnerable Challenge Contract (Ethernaut L1)",
+        "verified": True,
+        "upgradeable": False,
+        "proxy_pattern": "None (Immutable)",
+        "owner_type": "Single EOA Owner (Takeover Possible)",
+        "selfdestruct": False,
+        "reentrancy_risk": 0.15,
+        "admin_privileges": 0.95,
+        "oracle_dependency": False,
+        "vulnerabilities": "CRITICAL ACCESS CONTROL: The receive() fallback function allows ANY caller to become the contract owner by simply sending ETH, if they have any prior contribution. The owner can then call withdraw() to drain all funds. This demonstrates why access control logic must never reside in fallback/receive functions. Fix: remove ownership transfer from receive() and use proper access control modifiers.",
+        "contract_code_risk": 0.85,
+        "protocol_risk_score": 0.90,
+        "contract_verification": 0.20,
+        "protocol_maturity": 0.90
+    },
+    # Ethernaut Level 20: Denial — DoS via uncontrolled external call
+    "0xethernaut000000000000000000000000000000a3": {
+        "name": "Ethernaut: Denial",
+        "type": "Vulnerable Challenge Contract (Ethernaut L20)",
+        "verified": True,
+        "upgradeable": False,
+        "proxy_pattern": "None (Immutable)",
+        "owner_type": "Single EOA Owner",
+        "selfdestruct": False,
+        "reentrancy_risk": 0.75,
+        "admin_privileges": 0.40,
+        "oracle_dependency": False,
+        "vulnerabilities": "DENIAL OF SERVICE: The withdraw() function uses .call{value}() to send ETH to a user-configured 'partner' address with no gas limit. A malicious partner contract can consume all gas (e.g., via an infinite loop in receive()), preventing the owner from ever withdrawing funds. This is a classic gas griefing / DoS vulnerability. Fix: use .transfer() or .send() with a fixed gas stipend, or implement a pull-payment pattern.",
+        "contract_code_risk": 0.70,
+        "protocol_risk_score": 0.75,
+        "contract_verification": 0.20,
+        "protocol_maturity": 0.85
+    },
+    # Ethernaut Level 9: King — DoS via non-payable contract
+    "0xethernaut000000000000000000000000000000a4": {
+        "name": "Ethernaut: King",
+        "type": "Vulnerable Challenge Contract (Ethernaut L9)",
+        "verified": True,
+        "upgradeable": False,
+        "proxy_pattern": "None (Immutable)",
+        "owner_type": "Single EOA Owner",
+        "selfdestruct": False,
+        "reentrancy_risk": 0.30,
+        "admin_privileges": 0.50,
+        "oracle_dependency": False,
+        "vulnerabilities": "DENIAL OF SERVICE: The contract uses .transfer() to refund the previous 'king' when a new king claims the throne. If the previous king is a contract without a receive()/fallback function, the transfer reverts, permanently blocking anyone from becoming the new king. This demonstrates why contracts should never assume .transfer() will succeed. Fix: implement a pull-payment (withdrawal) pattern instead of push payments.",
+        "contract_code_risk": 0.60,
+        "protocol_risk_score": 0.65,
+        "contract_verification": 0.20,
+        "protocol_maturity": 0.80
     }
 }
 

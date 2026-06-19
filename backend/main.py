@@ -123,6 +123,17 @@ def confirm_blockchain_tx(req: schemas.ConfirmRequest, db: Session = Depends(dat
     db.commit()
     return {"status": "confirmed", "id": req.id}
 
+@app.post("/api/blockchain/cancel")
+def cancel_blockchain_tx(req: schemas.CancelRequest, db: Session = Depends(database.get_db)):
+    db_verification = db.query(models.Verification).filter(models.Verification.id == req.id).first()
+    if not db_verification:
+        raise HTTPException(status_code=404, detail="Verification entry not found.")
+    
+    db_verification.risk_result = "CANCELLED"
+    db.commit()
+    return {"status": "cancelled", "id": req.id}
+
+
 @app.get("/api/history", response_model=List[schemas.HistoryResponse])
 def get_transaction_history(wallet: str, db: Session = Depends(database.get_db)):
     # Fetch historical records for the connected wallet (case insensitive check)

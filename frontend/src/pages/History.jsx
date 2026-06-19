@@ -91,20 +91,26 @@ export default function History({ walletAddress }) {
                       <td className="py-4 px-3">
                         <span
                           className={`px-2 py-0.5 border text-[9px] font-bold rounded ${
-                            tx.risk_result === 'LOW'
+                            tx.risk_result === 'CANCELLED'
+                              ? 'border-[#909090]/20 text-[#909090] bg-[#909090]/5'
+                              : tx.risk_result === 'LOW'
                               ? 'border-[#C0FF00]/20 text-[#C0FF00] bg-[#C0FF00]/5'
                               : tx.risk_result === 'MEDIUM'
                               ? 'border-[#FFB300]/20 text-[#FFB300] bg-[#FFB300]/5'
                               : 'border-[#FF2A5F]/20 text-[#FF2A5F] bg-[#FF2A5F]/5'
                           }`}
                         >
-                          {tx.risk_result}
+                          {tx.risk_result || 'PENDING'}
                         </span>
                       </td>
                       <td className="py-4 px-3 text-center">
                         {tx.blockchain_confirmed ? (
                           <span className="text-[#C0FF00] text-[9px] font-bold uppercase border border-[#C0FF00]/20 px-2.5 py-0.5 rounded bg-[#C0FF00]/5 tracking-wider">
                             ON-CHAIN
+                          </span>
+                        ) : tx.risk_result === 'CANCELLED' ? (
+                          <span className="text-[#909090] text-[9px] font-bold uppercase border border-[#909090]/20 px-2.5 py-0.5 rounded bg-[#909090]/5 tracking-wider">
+                            CANCELLED
                           </span>
                         ) : (
                           <span className="text-[#FF2A5F] text-[9px] font-bold uppercase border border-[#FF2A5F]/20 px-2.5 py-0.5 rounded bg-[#FF2A5F]/5 tracking-wider">

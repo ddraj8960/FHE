@@ -30,6 +30,9 @@ ENV/
 **/.env.test.local
 **/.env.production.local
 
+# Generated PDFs
+mentor_demo_guide.pdf
+
 # Logs
 logs/
 *.log

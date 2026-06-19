@@ -106,14 +106,16 @@ export default function Audit() {
                     <span className="text-[10px] text-[#909090] block uppercase tracking-widest mb-1.5 font-bold">Risk Result</span>
                     <span
                       className={`text-xs font-bold ${
-                        record.risk_result === 'LOW'
+                        record.risk_result === 'CANCELLED'
+                          ? 'text-[#909090]'
+                          : record.risk_result === 'LOW'
                           ? 'text-[#C0FF00]'
                           : record.risk_result === 'MEDIUM'
                           ? 'text-[#FFB300]'
                           : 'text-[#FF2A5F]'
                       }`}
                     >
-                      {record.risk_result}
+                      {record.risk_result || 'PENDING'}
                     </span>
                   </div>
                 </div>
@@ -131,6 +133,10 @@ export default function Audit() {
                     {record.blockchain_confirmed ? (
                       <span className="text-[#C0FF00] font-bold border border-[#C0FF00]/20 px-2.5 py-1 rounded bg-[#C0FF00]/5">
                         VERIFIED (CONFIRMED ON-CHAIN)
+                      </span>
+                    ) : record.risk_result === 'CANCELLED' ? (
+                      <span className="text-[#909090] font-bold border border-[#909090]/20 px-2.5 py-1 rounded bg-[#909090]/5">
+                        CANCELLED BY USER
                       </span>
                     ) : (
                       <span className="text-[#FF2A5F] font-bold border border-[#FF2A5F]/20 px-2.5 py-1 rounded bg-[#FF2A5F]/5">

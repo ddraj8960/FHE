@@ -28,6 +28,14 @@ const PRE_LISTED_PROTOCOLS = [
   { name: "Euler V2 EVC", address: "0x0C9a3dd6b8F28529d72d7f9cE918D493519EE383" }
 ];
 
+// Ethernaut (OpenZeppelin) intentionally vulnerable contracts for demo validation
+const ETHERNAUT_CONTRACTS = [
+  { name: "Reentrance (L10)", address: "0xethernaut000000000000000000000000000000a1" },
+  { name: "Fallback (L1)", address: "0xethernaut000000000000000000000000000000a2" },
+  { name: "Denial (L20)", address: "0xethernaut000000000000000000000000000000a3" },
+  { name: "King (L9)", address: "0xethernaut000000000000000000000000000000a4" }
+];
+
 export default function Verify({ walletAddress, connectWallet }) {
   const [formData, setFormData] = useState({
     protocolSelect: '0x87870Bca3F3fD6335C3F4ce8392D69350B4fA4E2', // default Aave
@@ -309,6 +317,15 @@ export default function Verify({ walletAddress, connectWallet }) {
 
   const handleAbort = async () => {
     setErrorMsg('');
+    if (fheResult && fheResult.id) {
+      try {
+        await axios.post(`${BACKEND_URL}/api/blockchain/cancel`, {
+          id: fheResult.id
+        });
+      } catch (err) {
+        console.error("Failed to mark transaction as cancelled on backend:", err);
+      }
+    }
     setFheResult(null);
     setResult(null);
     setTerminalLogs([]);
@@ -506,9 +523,16 @@ export default function Verify({ walletAddress, connectWallet }) {
                     onChange={handleChange}
                     className="w-full bg-[#090909] border border-[#FF5A00]/30 focus:border-[#C0FF00] focus:outline-none p-3 font-mono text-xs text-[#F5F5F5] rounded transition-colors"
                   >
-                    {PRE_LISTED_PROTOCOLS.map((p) => (
-                      <option key={p.address} value={p.address}>{p.name} ({p.address.substring(0, 6)}...{p.address.slice(-4)})</option>
-                    ))}
+                    <optgroup label="Production DeFi Protocols">
+                      {PRE_LISTED_PROTOCOLS.map((p) => (
+                        <option key={p.address} value={p.address}>{p.name} ({p.address.substring(0, 6)}...{p.address.slice(-4)})</option>
+                      ))}
+                    </optgroup>
+                    <optgroup label="⚠ Ethernaut Vulnerable Contracts">
+                      {ETHERNAUT_CONTRACTS.map((p) => (
+                        <option key={p.address} value={p.address}>🔓 {p.name}</option>
+                      ))}
+                    </optgroup>
                     <option value="custom">Paste Custom Contract Address</option>
                   </select>
                 </div>
