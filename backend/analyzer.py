@@ -1,7 +1,10 @@
 import os
+import logging
 import requests
 import json
 from typing import Dict, Any
+
+logger = logging.getLogger(__name__)
 
 # OpenRouter key loaded from environment variables
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY", "")
@@ -153,11 +156,12 @@ def analyze_contract_address(address: str) -> Dict[str, Any]:
     Falls back to cached protocol values if dynamic retrieval fails.
     """
     normalized_addr = address.lower().strip()
-    print(f"[{address}] Performing dynamic live analysis...")
+    logger.info(f"[{address}] Performing dynamic live analysis...")
     
     solidity_source = ""
     verified = False
     contract_name = "Unknown Smart Contract"
+    etherscan_error = None
     
     # 1. Try Ethereum Mainnet (Chain ID: 1) on Etherscan API V2
     try:
@@ -166,6 +170,7 @@ def analyze_contract_address(address: str) -> Dict[str, Any]:
             url += f"&apikey={ETHERSCAN_API_KEY}"
             
         r = requests.get(url, timeout=10)
+        r.raise_for_status()
         data = r.json()
         
         if data.get("status") == "1" and data.get("result"):
@@ -175,9 +180,19 @@ def analyze_contract_address(address: str) -> Dict[str, Any]:
             
             if solidity_source:
                 verified = True
-                print(f"Contract {contract_name} verified on Ethereum Etherscan (V2).")
-    except Exception as e:
-        print(f"Ethereum Etherscan V2 query failed: {e}")
+                logger.info(f"Contract {contract_name} verified on Ethereum Etherscan (V2).")
+        else:
+            etherscan_error = f"Etherscan returned non-success status: {data.get('message', 'unknown')}"
+            logger.warning(etherscan_error)
+    except requests.exceptions.Timeout:
+        etherscan_error = "Ethereum Etherscan API V2 request timed out"
+        logger.warning(f"Ethereum Etherscan V2 query timed out for {address}")
+    except requests.exceptions.RequestException as e:
+        etherscan_error = f"Ethereum Etherscan network error: {e}"
+        logger.warning(f"Ethereum Etherscan V2 query failed for {address}: {e}")
+    except (ValueError, KeyError) as e:
+        etherscan_error = f"Ethereum Etherscan response parsing error: {e}"
+        logger.warning(f"Failed to parse Ethereum Etherscan V2 response for {address}: {e}")
         
     # 2. Try Arbitrum One (Chain ID: 42161) on Etherscan API V2 if not verified yet
     if not verified:
@@ -187,6 +202,7 @@ def analyze_contract_address(address: str) -> Dict[str, Any]:
                 url += f"&apikey={ETHERSCAN_API_KEY}"
                 
             r = requests.get(url, timeout=10)
+            r.raise_for_status()
             data = r.json()
             
             if data.get("status") == "1" and data.get("result"):
@@ -196,17 +212,27 @@ def analyze_contract_address(address: str) -> Dict[str, Any]:
                 
                 if solidity_source:
                     verified = True
-                    print(f"Contract {contract_name} verified on Arbitrum Arbiscan (V2).")
-        except Exception as e:
-            print(f"Arbiscan V2 query failed: {e}")
+                    logger.info(f"Contract {contract_name} verified on Arbitrum Arbiscan (V2).")
+        except requests.exceptions.Timeout:
+            etherscan_error = etherscan_error or "Arbiscan API V2 request timed out"
+            logger.warning(f"Arbiscan V2 query timed out for {address}")
+        except requests.exceptions.RequestException as e:
+            etherscan_error = etherscan_error or f"Arbiscan network error: {e}"
+            logger.warning(f"Arbiscan V2 query failed for {address}: {e}")
+        except (ValueError, KeyError) as e:
+            etherscan_error = etherscan_error or f"Arbiscan response parsing error: {e}"
+            logger.warning(f"Failed to parse Arbiscan V2 response for {address}: {e}")
 
     # 3. Fallback to cached registry if query failed but address is cached
     if not verified and normalized_addr in CACHED_PROTOCOLS:
-        print(f"[{address}] Dynamic query failed or unverified on V2. Falling back to cached protocol registry.")
+        logger.info(f"[{address}] Dynamic query failed or unverified on V2. Falling back to cached protocol registry.")
         return CACHED_PROTOCOLS[normalized_addr]
 
     # 4. If still not verified, assign default high risk parameters (safe default)
     if not verified:
+        warning = "CRITICAL: Smart contract source code is not verified on Etherscan/Arbiscan V2. Bytecode execution carries high threat vector."
+        if etherscan_error:
+            warning += f" (Note: {etherscan_error})"
         return {
             "name": contract_name,
             "type": "Unverified Contract",
@@ -218,7 +244,7 @@ def analyze_contract_address(address: str) -> Dict[str, Any]:
             "reentrancy_risk": 0.80,
             "admin_privileges": 0.90,
             "oracle_dependency": True,
-            "vulnerabilities": "CRITICAL: Smart contract source code is not verified on Etherscan/Arbiscan V2. Bytecode execution carries high threat vector.",
+            "vulnerabilities": warning,
             "contract_code_risk": 0.95,
             "protocol_risk_score": 0.90,
             "contract_verification": 0.90,
@@ -269,7 +295,7 @@ def run_llm_code_audit(contract_name: str, source_code: str) -> Dict[str, Any]:
     # 1. Try Direct Google Gemini API first if GEMINI_API_KEY is available
     if GEMINI_API_KEY:
         try:
-            print("Running dynamic LLM audit via native Google Gemini API...")
+            logger.info("Running dynamic LLM audit via native Google Gemini API...")
             url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key={GEMINI_API_KEY}"
             headers = {"Content-Type": "application/json"}
             payload = {
@@ -292,19 +318,24 @@ def run_llm_code_audit(contract_name: str, source_code: str) -> Dict[str, Any]:
                 parsed_result["contract_verification"] = 0.5 if parsed_result.get("upgradeable") else 0.1
                 parsed_result["protocol_maturity"] = 0.5
                 
-                print(f"Native Gemini audit succeeded: {parsed_result['contract_code_risk']}")
+                logger.info(f"Native Gemini audit succeeded: {parsed_result['contract_code_risk']}")
                 return parsed_result
             else:
-                print(f"Native Gemini API call returned status {r.status_code}: {r.text}")
-        except Exception as e:
-            import traceback
-            traceback.print_exc()
-            print(f"Native Gemini API call failed: {e}. Trying OpenRouter...")
+                logger.warning(
+                    f"Native Gemini API returned HTTP {r.status_code} for contract '{contract_name}': "
+                    f"{r.text[:200]}. Trying OpenRouter..."
+                )
+        except requests.exceptions.Timeout:
+            logger.warning(f"Native Gemini API timed out for contract '{contract_name}'. Trying OpenRouter...")
+        except requests.exceptions.RequestException as e:
+            logger.warning(f"Native Gemini API network error for contract '{contract_name}': {e}. Trying OpenRouter...")
+        except (json.JSONDecodeError, KeyError, IndexError) as e:
+            logger.warning(f"Failed to parse Gemini response for contract '{contract_name}': {e}. Trying OpenRouter...")
 
     # 2. Try OpenRouter API if OPENROUTER_API_KEY is available
     if OPENROUTER_API_KEY:
         try:
-            print("Running dynamic LLM audit via OpenRouter...")
+            logger.info("Running dynamic LLM audit via OpenRouter...")
             headers = {
                 "Authorization": f"Bearer {OPENROUTER_API_KEY}",
                 "Content-Type": "application/json"
@@ -331,15 +362,22 @@ def run_llm_code_audit(contract_name: str, source_code: str) -> Dict[str, Any]:
                 parsed_result["contract_verification"] = 0.5 if parsed_result.get("upgradeable") else 0.1
                 parsed_result["protocol_maturity"] = 0.5
                 
-                print(f"OpenRouter audit succeeded: {parsed_result['contract_code_risk']}")
+                logger.info(f"OpenRouter audit succeeded: {parsed_result['contract_code_risk']}")
                 return parsed_result
-        except Exception as e:
-            print(f"OpenRouter API call failed: {e}.")
+            else:
+                logger.warning(
+                    f"OpenRouter returned HTTP {r.status_code} for contract '{contract_name}': "
+                    f"{r.text[:200]}. Falling back to heuristic analysis."
+                )
+        except requests.exceptions.Timeout:
+            logger.warning(f"OpenRouter API timed out for contract '{contract_name}'. Falling back to heuristic analysis.")
+        except requests.exceptions.RequestException as e:
+            logger.warning(f"OpenRouter network error for contract '{contract_name}': {e}. Falling back to heuristic analysis.")
+        except (json.JSONDecodeError, KeyError, IndexError) as e:
+            logger.warning(f"Failed to parse OpenRouter response for contract '{contract_name}': {e}. Falling back to heuristic analysis.")
 
-    # If both keys are missing or calls failed, fall back to heuristic scan
-    print("No working LLM API keys configured or request failed. Executing fail-safe heuristic fallback...")
-        
     # Fail-safe fallback: generate reasonable values based on regex keyword analysis
+    logger.warning(f"All LLM audit attempts failed for '{contract_name}'. Using heuristic fallback.")
     has_proxy = "proxy" in source_code.lower() or "implementation" in source_code.lower()
     has_owner = "owner" in source_code.lower() or "onlyowner" in source_code.lower() or "admin" in source_code.lower()
     has_selfdestruct = "selfdestruct" in source_code.lower() or "suicide" in source_code.lower()

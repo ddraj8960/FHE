@@ -1,5 +1,6 @@
 import os
 import hashlib
+import logging
 import numpy as np
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -7,6 +8,8 @@ from pydantic import BaseModel
 from typing import List
 
 from concrete.ml.deployment import FHEModelClient
+
+logger = logging.getLogger(__name__)
 
 app = FastAPI(title="WalletShield Client FHE Daemon", version="1.0.0")
 
@@ -63,51 +66,58 @@ def generate_keys():
 
 @app.post("/api/client/encrypt")
 def encrypt_features(req: EncryptRequest):
+    if len(req.features) != 6:
+        raise HTTPException(status_code=400, detail=f"Expected 6 features, got {len(req.features)}")
+
     try:
         # Check if keys are ready, otherwise generate
         if not cached_keys["generated"]:
             generate_keys()
-        
+
         # Convert features to 2D numpy array
         x = np.array([req.features])
-        
+
         # Encrypt and serialize features
         ciphertext_bytes = fhe_client.quantize_encrypt_serialize(x)
-        
+
         # Calculate SHA256 of the ciphertext (to be used as the blockchain payload hash)
         ciphertext_hash = hashlib.sha256(ciphertext_bytes).hexdigest()
-        
+
         return {
             "ciphertext": ciphertext_bytes.hex(),
             "eval_key": cached_keys["eval_key_hex"],
             "ciphertext_hash": ciphertext_hash
         }
+    except HTTPException:
+        raise
     except Exception as e:
-        print(f"Encryption failed: {e}")
-        raise HTTPException(status_code=500, detail=f"Encryption failed: {str(e)}")
+        logger.exception("Encryption failed")
+        raise HTTPException(status_code=500, detail=f"Encryption failed: {e}")
 
 @app.post("/api/client/decrypt")
 def decrypt_result(req: DecryptRequest):
+    if not cached_keys["generated"]:
+        raise HTTPException(status_code=400, detail="Keys are not generated. Cannot decrypt.")
+
     try:
-        if not cached_keys["generated"]:
-            raise HTTPException(status_code=400, detail="Keys are not generated. Cannot decrypt.")
-        
-        # Convert hex result to bytes
         encrypted_result_bytes = bytes.fromhex(req.encrypted_result)
-        
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=f"Invalid encrypted_result hex encoding: {e}")
+
+    try:
         # Decrypt result using secret key
         res = fhe_client.deserialize_decrypt_dequantize(encrypted_result_bytes)
-        print(f"Decrypted model output raw shape {res.shape}: {res}")
-        
+        logger.info(f"Decrypted model output raw shape {res.shape}: {res}")
+
         # Parse prediction robustly
         if len(res.shape) > 1 and res.shape[1] > 1:
-            # Multi-class probabilities or decision functions, get argmax
             prediction = int(res[0].argmax())
         else:
-            # Direct class label
             prediction = int(res.flatten()[0])
-            
+
         return {"prediction": prediction}
+    except HTTPException:
+        raise
     except Exception as e:
-        print(f"Decryption failed: {e}")
-        raise HTTPException(status_code=500, detail=f"Decryption failed: {str(e)}")
+        logger.exception("Decryption failed")
+        raise HTTPException(status_code=500, detail=f"Decryption failed: {e}")

@@ -1,3 +1,4 @@
+import sys
 import requests
 import json
 import time
@@ -12,9 +13,16 @@ def run_integration_test():
     target_address = "0x87870Bca3F3fD6335C3F4ce8392D69350B4fA4E2" # Aave V3 Pool
     print(f"\n[Step 1] Requesting contract analysis for address: {target_address}...")
     
-    res = requests.post(f"{BACKEND_URL}/api/analyze-contract", json={"address": target_address})
+    try:
+        res = requests.post(f"{BACKEND_URL}/api/analyze-contract", json={"address": target_address}, timeout=15)
+    except requests.exceptions.ConnectionError as e:
+        print(f"Error: Cannot connect to backend at {BACKEND_URL}: {e}")
+        return False
+    except requests.exceptions.Timeout:
+        print(f"Error: Backend request timed out at {BACKEND_URL}")
+        return False
     if res.status_code != 200:
-        print(f"Error: Contract analysis failed: {res.text}")
+        print(f"Error: Contract analysis failed (HTTP {res.status_code}): {res.text}")
         return False
     
     report = res.json()
@@ -43,9 +51,16 @@ def run_integration_test():
     
     print(f"\n[Step 2] Sending feature vector {features} to local FHE daemon for encryption...")
     start_time = time.time()
-    res = requests.post(f"{CLIENT_DAEMON_URL}/api/client/encrypt", json={"features": features})
+    try:
+        res = requests.post(f"{CLIENT_DAEMON_URL}/api/client/encrypt", json={"features": features}, timeout=30)
+    except requests.exceptions.ConnectionError as e:
+        print(f"Error: Cannot connect to FHE client daemon at {CLIENT_DAEMON_URL}: {e}")
+        return False
+    except requests.exceptions.Timeout:
+        print(f"Error: FHE encryption request timed out at {CLIENT_DAEMON_URL}")
+        return False
     if res.status_code != 200:
-        print(f"Error: Encryption daemon failed: {res.text}")
+        print(f"Error: Encryption daemon failed (HTTP {res.status_code}): {res.text}")
         return False
     
     encrypt_data = res.json()
@@ -61,16 +76,22 @@ def run_integration_test():
     # Step 3: Run blind inference on backend
     print(f"\n[Step 3] Sending encrypted ciphertext to backend for blind homomorphic inference...")
     start_time = time.time()
-    res = requests.post(f"{BACKEND_URL}/api/verify", json={
-        "ciphertext": ciphertext,
-        "eval_key": eval_key,
-        "wallet_address": "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266", # Hardhat Account #0
-        "investment_range": "10K-50K",
-        "protocol_name": report['name']
-    })
-    
+    try:
+        res = requests.post(f"{BACKEND_URL}/api/verify", json={
+            "ciphertext": ciphertext,
+            "eval_key": eval_key,
+            "wallet_address": "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266", # Hardhat Account #0
+            "investment_range": "10K-50K",
+            "protocol_name": report['name']
+        }, timeout=60)
+    except requests.exceptions.ConnectionError as e:
+        print(f"Error: Cannot connect to backend at {BACKEND_URL}: {e}")
+        return False
+    except requests.exceptions.Timeout:
+        print(f"Error: FHE inference request timed out at {BACKEND_URL}")
+        return False
     if res.status_code != 200:
-        print(f"Error: Backend inference failed: {res.text}")
+        print(f"Error: Backend inference failed (HTTP {res.status_code}): {res.text}")
         return False
         
     verify_data = res.json()
@@ -83,11 +104,18 @@ def run_integration_test():
     
     # Step 4: Decrypt result locally
     print(f"\n[Step 4] Decrypting prediction locally using FHE daemon...")
-    res = requests.post(f"{CLIENT_DAEMON_URL}/api/client/decrypt", json={
-        "encrypted_result": encrypted_result
-    })
+    try:
+        res = requests.post(f"{CLIENT_DAEMON_URL}/api/client/decrypt", json={
+            "encrypted_result": encrypted_result
+        }, timeout=15)
+    except requests.exceptions.ConnectionError as e:
+        print(f"Error: Cannot connect to FHE client daemon at {CLIENT_DAEMON_URL}: {e}")
+        return False
+    except requests.exceptions.Timeout:
+        print(f"Error: Decryption request timed out at {CLIENT_DAEMON_URL}")
+        return False
     if res.status_code != 200:
-        print(f"Error: Decryption daemon failed: {res.text}")
+        print(f"Error: Decryption daemon failed (HTTP {res.status_code}): {res.text}")
         return False
         
     decrypt_data = res.json()
@@ -102,4 +130,6 @@ def run_integration_test():
     return True
 
 if __name__ == "__main__":
-    run_integration_test()
+    success = run_integration_test()
+    if not success:
+        sys.exit(1)

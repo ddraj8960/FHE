@@ -1,11 +1,16 @@
 import os
 import uuid
 import hashlib
+import logging
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from typing import List, Dict, Any
 from pydantic import BaseModel
+
+logger = logging.getLogger(__name__)
+
+VALID_RISK_LEVELS = {"LOW", "MEDIUM", "HIGH"}
 
 # Custom lightweight .env loader to support local API key setups
 def load_dotenv():
@@ -77,50 +82,73 @@ def verify_transaction(req: schemas.VerifyRequest, db: Session = Depends(databas
     Submit FHE ciphertext (comprising encrypted private features) for server blind inference.
     Combine with public features server-side if needed (the client compiles the full 6-feature vector).
     """
+    # Validate and decode hex inputs (client error if malformed)
     try:
-        # Convert hex inputs to bytes
         ciphertext_bytes = bytes.fromhex(req.ciphertext)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=f"Invalid ciphertext hex encoding: {e}")
+
+    try:
         eval_key_bytes = bytes.fromhex(req.eval_key)
-        
-        # Calculate SHA256 of the ciphertext to act as the on-chain audit log registry hash
-        ciphertext_hash = hashlib.sha256(ciphertext_bytes).hexdigest()
-        
-        # Execute homomorphic prediction (inference) on the server on ciphertext
-        # Server does not have access to the secret key, nor does it see plaintext features
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=f"Invalid eval_key hex encoding: {e}")
+
+    # Calculate SHA256 of the ciphertext to act as the on-chain audit log registry hash
+    ciphertext_hash = hashlib.sha256(ciphertext_bytes).hexdigest()
+
+    # Execute homomorphic prediction (inference) on the server on ciphertext
+    # Server does not have access to the secret key, nor does it see plaintext features
+    try:
         encrypted_result_bytes = fhe_server.run(ciphertext_bytes, eval_key_bytes)
-        
-        # Create a database record
-        verification_id = str(uuid.uuid4())
-        db_verification = models.Verification(
-            id=verification_id,
-            wallet_address=req.wallet_address.lower(),
-            encrypted_payload_hash=ciphertext_hash,
-            investment_range=req.investment_range,
-            protocol_name=req.protocol_name,
-            blockchain_confirmed=False
-        )
-        db.add(db_verification)
-        db.commit()
-        
-        return schemas.VerifyResponse(
-            encrypted_result=encrypted_result_bytes.hex(),
-            id=verification_id
-        )
-        
     except Exception as e:
-        print(f"Inference error: {e}")
-        raise HTTPException(status_code=500, detail=f"Inference execution failed: {str(e)}")
+        logger.exception("FHE inference failed")
+        raise HTTPException(status_code=500, detail=f"FHE inference execution failed: {e}")
+
+    # Create a database record
+    verification_id = str(uuid.uuid4())
+    db_verification = models.Verification(
+        id=verification_id,
+        wallet_address=req.wallet_address.lower(),
+        encrypted_payload_hash=ciphertext_hash,
+        investment_range=req.investment_range,
+        protocol_name=req.protocol_name,
+        blockchain_confirmed=False
+    )
+    db.add(db_verification)
+    try:
+        db.commit()
+    except Exception as e:
+        db.rollback()
+        logger.exception("Database commit failed during verify_transaction")
+        raise HTTPException(status_code=500, detail="Failed to persist verification record.")
+
+    return schemas.VerifyResponse(
+        encrypted_result=encrypted_result_bytes.hex(),
+        id=verification_id
+    )
 
 @app.post("/api/blockchain/confirm")
 def confirm_blockchain_tx(req: schemas.ConfirmRequest, db: Session = Depends(database.get_db)):
+    risk_upper = req.risk_result.upper()
+    if risk_upper not in VALID_RISK_LEVELS:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid risk_result '{req.risk_result}'. Must be one of: {', '.join(sorted(VALID_RISK_LEVELS))}"
+        )
+
     db_verification = db.query(models.Verification).filter(models.Verification.id == req.id).first()
     if not db_verification:
         raise HTTPException(status_code=404, detail="Verification entry not found.")
-    
+
     db_verification.blockchain_tx_hash = req.tx_hash
-    db_verification.risk_result = req.risk_result.upper()
+    db_verification.risk_result = risk_upper
     db_verification.blockchain_confirmed = True
-    db.commit()
+    try:
+        db.commit()
+    except Exception as e:
+        db.rollback()
+        logger.exception("Database commit failed during confirm_blockchain_tx")
+        raise HTTPException(status_code=500, detail="Failed to confirm blockchain transaction.")
     return {"status": "confirmed", "id": req.id}
 
 @app.post("/api/blockchain/cancel")
