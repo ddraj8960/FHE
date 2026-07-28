@@ -72,7 +72,7 @@ CACHED_PROTOCOLS = {
     # wargame, used to validate WalletShield's vulnerability detection.
     # ═══════════════════════════════════════════════════════════════
     # Ethernaut Level 10: Reentrance — Classic reentrancy attack
-    "0xethernaut000000000000000000000000000000a1": {
+    "0x00000000000000000000000000000000000000a1": {
         "name": "Ethernaut: Reentrance",
         "type": "Vulnerable Challenge Contract (Ethernaut L10)",
         "verified": True,
@@ -90,7 +90,7 @@ CACHED_PROTOCOLS = {
         "protocol_maturity": 0.90
     },
     # Ethernaut Level 1: Fallback — Ownership takeover via receive()
-    "0xethernaut000000000000000000000000000000a2": {
+    "0x00000000000000000000000000000000000000a2": {
         "name": "Ethernaut: Fallback",
         "type": "Vulnerable Challenge Contract (Ethernaut L1)",
         "verified": True,
@@ -108,7 +108,7 @@ CACHED_PROTOCOLS = {
         "protocol_maturity": 0.90
     },
     # Ethernaut Level 20: Denial — DoS via uncontrolled external call
-    "0xethernaut000000000000000000000000000000a3": {
+    "0x00000000000000000000000000000000000000a3": {
         "name": "Ethernaut: Denial",
         "type": "Vulnerable Challenge Contract (Ethernaut L20)",
         "verified": True,
@@ -126,7 +126,7 @@ CACHED_PROTOCOLS = {
         "protocol_maturity": 0.85
     },
     # Ethernaut Level 9: King — DoS via non-payable contract
-    "0xethernaut000000000000000000000000000000a4": {
+    "0x00000000000000000000000000000000000000a4": {
         "name": "Ethernaut: King",
         "type": "Vulnerable Challenge Contract (Ethernaut L9)",
         "verified": True,

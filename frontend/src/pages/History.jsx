@@ -128,12 +128,12 @@ export default function History({ walletAddress }) {
                           </Link>
                           {tx.blockchain_tx_hash && (
                             <a
-                              href={`https://etherscan.io/tx/${tx.blockchain_tx_hash}`}
+                              href={`https://amoy.polygonscan.com/tx/${tx.blockchain_tx_hash}`}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="hover:text-[#C0FF00] hover:underline uppercase text-[10px] tracking-widest font-bold"
                             >
-                              Scan
+                              AmoyScan
                             </a>
                           )}
                         </div>

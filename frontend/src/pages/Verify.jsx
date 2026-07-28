@@ -30,10 +30,10 @@ const PRE_LISTED_PROTOCOLS = [
 
 // Ethernaut (OpenZeppelin) intentionally vulnerable contracts for demo validation
 const ETHERNAUT_CONTRACTS = [
-  { name: "Reentrance (L10)", address: "0xethernaut000000000000000000000000000000a1" },
-  { name: "Fallback (L1)", address: "0xethernaut000000000000000000000000000000a2" },
-  { name: "Denial (L20)", address: "0xethernaut000000000000000000000000000000a3" },
-  { name: "King (L9)", address: "0xethernaut000000000000000000000000000000a4" }
+  { name: "Reentrance (L10)", address: "0x00000000000000000000000000000000000000a1" },
+  { name: "Fallback (L1)", address: "0x00000000000000000000000000000000000000a2" },
+  { name: "Denial (L20)", address: "0x00000000000000000000000000000000000000a3" },
+  { name: "King (L9)", address: "0x00000000000000000000000000000000000000a4" }
 ];
 
 export default function Verify({ walletAddress, connectWallet }) {
@@ -300,7 +300,9 @@ export default function Verify({ walletAddress, connectWallet }) {
     } catch (err) {
       console.error(err);
       let errMsg = "An error occurred during blockchain execution.";
-      if (err.response?.data?.detail) {
+      if (err.message && (err.message.includes("429") || err.message.includes("rate limited"))) {
+        errMsg = "Polygon Amoy RPC Rate Limit reached (HTTP 429). Please wait 5 seconds and try again, or switch RPC URL in MetaMask.";
+      } else if (err.response?.data?.detail) {
         errMsg = typeof err.response.data.detail === 'string' 
           ? err.response.data.detail 
           : JSON.stringify(err.response.data.detail);
@@ -413,7 +415,7 @@ export default function Verify({ walletAddress, connectWallet }) {
                   <div className="border border-[#222222] bg-[#090909] p-3.5 rounded">
                     <span className="text-[#F5F5F5] block uppercase tracking-wider mb-1.5 font-bold text-[#FF5A00]">On-chain Audit Receipt</span>
                     <a
-                      href={`https://etherscan.io/tx/${result.logTxHash}`}
+                      href={`https://amoy.polygonscan.com/tx/${result.logTxHash}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="break-all text-[#C0FF00] hover:underline p-1.5 rounded bg-[#050505] border border-white/5 block"
